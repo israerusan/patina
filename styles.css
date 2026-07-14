@@ -161,6 +161,68 @@
 	padding: var(--size-2-1) var(--size-4-1);
 }
 
+/* --- topic groups (Pro) --------------------------------------------------- */
+
+.note-decay-group {
+	padding-top: var(--size-4-3);
+}
+
+.note-decay-group-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--size-4-2);
+	padding-bottom: var(--size-4-1);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.note-decay-group-label {
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.note-decay-group-count {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	white-space: nowrap;
+}
+
+/* --- superseded notes (Pro) ----------------------------------------------- */
+
+.note-decay-superseded-lead {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.note-decay-superseded-row {
+	padding: var(--size-4-2) 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.note-decay-superseded-by {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	padding-top: var(--size-4-1);
+	font-size: var(--font-ui-smaller);
+}
+
+.note-decay-superseded-link {
+	color: var(--text-accent);
+	text-decoration: none;
+}
+
+.note-decay-superseded-link:hover {
+	text-decoration: underline;
+}
+
+/* --- "why this Pro feature could not run" --------------------------------- */
+
+.note-decay-block-copy {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
 /* --- suggester ------------------------------------------------------------ */
 
 .note-decay-suggest-name {
@@ -255,6 +317,31 @@
 .note-decay-pro-btn:hover {
 	background-color: var(--interactive-accent-hover);
 	color: var(--text-on-accent);
+}
+
+/* The honest stand-in for a buy button while there is no checkout (product.ts: PURCHASE_URL is
+ * null). It is deliberately NOT styled as a button: nothing here is clickable, and a disabled
+ * accent-coloured button would invite the click anyway. */
+
+.note-decay-pro-pending {
+	display: block;
+	padding: var(--size-4-2);
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-primary);
+}
+
+.note-decay-pro-pending-label {
+	display: block;
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.note-decay-pro-pending-copy {
+	display: block;
+	padding-top: var(--size-4-1);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
 }
 
 /* --- upsell modal --------------------------------------------------------- */

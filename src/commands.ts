@@ -75,7 +75,17 @@ export function registerCommands(plugin: NoteDecayPlugin): void {
 		name: "Group the review queue by topic",
 		checkCallback: (checking) => {
 			if (!plugin.canUseSemanticPro()) return false;
-			if (!checking) plugin.groupQueueByTopic();
+			if (!checking) void plugin.groupQueueByTopic();
+			return true;
+		},
+	});
+
+	plugin.addCommand({
+		id: "find-superseded-notes",
+		name: "Find superseded notes",
+		checkCallback: (checking) => {
+			if (!plugin.canUseSemanticPro()) return false;
+			if (!checking) void plugin.findSuperseded();
 			return true;
 		},
 	});

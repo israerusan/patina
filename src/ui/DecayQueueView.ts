@@ -2,8 +2,9 @@ import { ItemView, type WorkspaceLeaf } from "obsidian";
 import type NoteDecayPlugin from "../main";
 import { buildQueue, QUEUE_SORTS } from "../core/queue.mjs";
 import type { QueueRow, QueueSort } from "../core/queue.d.mts";
+import type { TopicGroup } from "../core/topics.d.mts";
+import { EMPTY_TOPIC_GROUPS } from "../core/engineCopy.mjs";
 import { FEATURES } from "../core/features.mjs";
-import { needsEngine } from "../shared/featureGates.mjs";
 import { requirePro } from "./pro/ProGate";
 
 export const VIEW_TYPE_DECAY_QUEUE = "note-decay-queue";
@@ -21,6 +22,11 @@ const SORT_LABELS: Record<QueueSort, string> = {
  * "Editing time" is sorted from Effort Index's aggregates in the SHARED signals store. When
  * Effort Index is not installed the column is empty and the sort is inert — no dependency,
  * no error, just a column that fills in for free if the user ever installs the other add-on.
+ *
+ * PRO: when `plugin.topics` holds a grouping, the flat list is replaced by topic sections —
+ * one review session, one subject (DESIGN 8.1). The grouping is computed by the semantic
+ * engine and handed here; this view never talks to the engine and never decides whether the
+ * user is entitled to it. It renders whatever it is given, including nothing.
  */
 export class DecayQueueView extends ItemView {
 	private rows: QueueRow[] = [];
@@ -70,6 +76,12 @@ export class DecayQueueView extends ItemView {
 			return;
 		}
 
+		const grouping = this.plugin.topics;
+		if (grouping) {
+			this.renderGrouped(root, grouping.groups, grouping.ungrouped);
+			return;
+		}
+
 		const list = root.createDiv({ cls: "note-decay-list" });
 		for (const row of this.rows) this.renderRow(list, row);
 	}
@@ -90,6 +102,20 @@ export class DecayQueueView extends ItemView {
 			void this.plugin.setQueueSort(select.value as QueueSort);
 		});
 
+		// Already grouped: the button's job is now to get back to the flat worklist. No Pro gate
+		// on ungrouping — a user whose licence lapsed mid-session must not be stranded in a view
+		// they cannot leave.
+		if (this.plugin.topics) {
+			const ungroup = header.createEl("button", {
+				cls: "note-decay-topic-btn",
+				text: "Ungroup",
+			});
+			this.registerDomEvent(ungroup, "click", () => {
+				this.plugin.clearTopicGroups();
+			});
+			return;
+		}
+
 		// The Pro surface. It is rendered for free users too — a locked row that says what it
 		// would do is an honest paywall; a hidden feature is a feature nobody buys. The
 		// COMMAND is hidden from the palette instead (see commands.ts), because a palette
@@ -102,15 +128,65 @@ export class DecayQueueView extends ItemView {
 		if (!this.plugin.settings.isPro) topic.addClass("is-locked");
 		this.registerDomEvent(topic, "click", () => {
 			requirePro({ isPro: this.plugin.settings.isPro, app: this.app }, "topicGroups", () => {
-				this.plugin.groupQueueByTopic();
+				void this.plugin.groupQueueByTopic();
 			});
 		});
-		if (needsEngine(FEATURES, "topicGroups")) {
-			topic.setAttr(
-				"aria-label",
-				"Clusters the queue by topic so one review session covers one subject. Needs the semantic engine (desktop)."
-			);
+		topic.setAttr(
+			"aria-label",
+			"Clusters the queue by topic so one review session covers one subject. Needs the semantic engine (desktop)."
+		);
+	}
+
+	/**
+	 * The grouped queue.
+	 *
+	 * THREE sections, and the second and third are the reason this is not four lines:
+	 *  - the topics themselves;
+	 *  - `ungrouped` — notes the engine compared and found no topic for. Still rotting, still
+	 *    listed. Dropping them would turn "group the queue" into "hide most of the queue";
+	 *  - notes BELOW the session cap, which were never compared at all. They are labelled as
+	 *    such rather than swept into "no shared topic", which would be a claim we did not make.
+	 *
+	 * Every row in the flat queue appears in exactly one of the three. Grouping never loses a note.
+	 */
+	private renderGrouped(root: HTMLElement, groups: TopicGroup[], ungrouped: QueueRow[]): void {
+		if (groups.length === 0) {
+			root.createDiv({ cls: "note-decay-empty", text: EMPTY_TOPIC_GROUPS });
 		}
+
+		const seen = new Set<string>();
+		for (const group of groups) {
+			const section = root.createDiv({ cls: "note-decay-group" });
+			const head = section.createDiv({ cls: "note-decay-group-head" });
+			head.createSpan({ cls: "note-decay-group-label", text: group.label });
+			head.createSpan({
+				cls: "note-decay-group-count",
+				text: `${group.members.length} notes · ${Math.round(group.cohesion * 100)}% alike`,
+			});
+
+			const list = section.createDiv({ cls: "note-decay-list" });
+			for (const row of group.members) {
+				seen.add(row.path);
+				this.renderRow(list, row);
+			}
+		}
+
+		for (const row of ungrouped) seen.add(row.path);
+		this.renderSection(root, "No shared topic", ungrouped);
+
+		const uncompared = this.rows.filter((row) => !seen.has(row.path));
+		this.renderSection(root, "Below the session cap — not compared", uncompared);
+	}
+
+	private renderSection(root: HTMLElement, label: string, rows: QueueRow[]): void {
+		if (rows.length === 0) return;
+		const section = root.createDiv({ cls: "note-decay-group" });
+		section.createDiv({ cls: "note-decay-group-head" }).createSpan({
+			cls: "note-decay-group-label",
+			text: label,
+		});
+		const list = section.createDiv({ cls: "note-decay-list" });
+		for (const row of rows) this.renderRow(list, row);
 	}
 
 	private renderRow(list: HTMLElement, row: QueueRow): void {

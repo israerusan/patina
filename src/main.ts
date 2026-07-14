@@ -10,18 +10,29 @@ import { resolveLicenseTransition } from "./shared/licenseTransition.mjs";
 import { SignalStore, newWriterId } from "./shared/signals/SignalStore";
 import { SignalsBroker } from "./shared/signals/SignalsBroker";
 import { EngineBroker } from "./shared/engine/EngineBroker";
-import type { EngineHost, EngineStatus } from "./shared/engine/EngineHost";
+import type { EngineHost, EngineStatus, InstallProgress } from "./shared/engine/EngineHost";
 import { LicenseManager } from "./license/LicenseManager";
 import { DEFAULT_SETTINGS, type NoteDecaySettings } from "./settings";
 import { DecayIndex } from "./decayIndex";
 import { buildQueue, toCsv } from "./core/queue.mjs";
-import type { QueueSort } from "./core/queue.d.mts";
+import type { QueueRow, QueueSort } from "./core/queue.d.mts";
+import type { TopicGrouping } from "./core/topics.d.mts";
+import { FEATURES } from "./core/features.mjs";
+import { isFeatureEnabled } from "./shared/featureGates.mjs";
+import {
+	MAX_SESSION_NOTES,
+	SemanticService,
+	type SemanticBlock,
+	type SemanticProgress,
+} from "./semantic";
 import { DecayQueueView, VIEW_TYPE_DECAY_QUEUE } from "./ui/DecayQueueView";
 import { NoteDecaySettingTab } from "./ui/SettingsTab";
 import { StatusBar } from "./ui/StatusBar";
 import { ExplorerDecorator } from "./ui/ExplorerDecorator";
+import { SupersededModal } from "./ui/SupersededModal";
+import { showSemanticBlock } from "./ui/pro/SemanticGate";
 import { noticeProfile, noticeSnoozed, registerCommands } from "./commands";
-import { PRODUCT_NAME } from "./product";
+import { PRODUCT_NAME, type PRO_UPSELL } from "./product";
 
 /** How long a burst of continuous setting changes is coalesced before a write. */
 const SAVE_DEBOUNCE_MS = 400;
@@ -46,6 +57,21 @@ export default class NoteDecayPlugin extends Plugin {
 	engine: EngineHost | null = null;
 	/** Cached: an installed-or-running engine. checkCallback runs synchronously and cannot await. */
 	private engineReady = false;
+
+	/**
+	 * The two semantic Pro features (DESIGN 8.1). It is constructed on every load, Pro or not:
+	 * it gates itself on `isPro` per call, so a free user's click costs one synchronous `false`
+	 * and reaches no engine. Constructing it starts nothing.
+	 */
+	readonly semantic = new SemanticService({
+		app: this.app,
+		entitled: (feature) => isFeatureEnabled(FEATURES, feature, this.settings.isPro),
+		engine: () => this.engine,
+		excludeFolders: () => this.settings.excludeFolders,
+	});
+
+	/** PRO. The current topic grouping, or null for the flat worklist. Never persisted. */
+	topics: TopicGrouping | null = null;
 
 	private signals: SignalStore | null = null;
 	private statusBar: StatusBar | null = null;
@@ -164,6 +190,12 @@ export default class NoteDecayPlugin extends Plugin {
 		this.signals?.dispose();
 		SignalsBroker.releaseIfOwner(this.manifest.id);
 
+		// Cancel every in-flight embed/query BEFORE releasing the engine ref. The engine is
+		// SHARED: if another Second Read add-on still holds a ref the child survives this
+		// unload, and it would otherwise keep grinding through a batch whose only reader has
+		// just gone away.
+		this.semantic.dispose();
+
 		// Drops this plugin's ref. When the LAST Second Read add-on releases, the engine child
 		// process is killed — this is the kill path that makes a zombie sidecar impossible.
 		EngineBroker.release(this.manifest.id);
@@ -281,10 +313,18 @@ export default class NoteDecayPlugin extends Plugin {
 
 	/**
 	 * Pro flipped. Note Decay has no Pro-only SETTING to disable — its two Pro features are
-	 * actions, gated at the point of use — so all this has to do is repaint the surfaces that
-	 * render a Pro affordance. If a Pro-only persisted toggle is ever added, turn it off here.
+	 * actions, gated at the point of use — so all this has to do is drop the Pro-only STATE and
+	 * repaint. If a Pro-only persisted toggle is ever added, turn it off here.
+	 *
+	 * The topic grouping is Pro-only OUTPUT, so it goes when Pro goes: a key that stops
+	 * verifying must not leave the queue permanently displaying a Pro view (and `this.topics`
+	 * is deliberately not persisted, so a restart cannot resurrect one either).
 	 */
 	private onEntitlementChanged(): void {
+		if (!this.settings.isPro) {
+			this.topics = null;
+			this.semantic.cancelInflight();
+		}
 		this.renderQueueViews();
 	}
 
@@ -427,15 +467,24 @@ export default class NoteDecayPlugin extends Plugin {
 		new Notice(`${PRODUCT_NAME} exported ${rows.length} notes to ${path}.`);
 	}
 
-	// --- Pro (stubbed until the semantic engine ships — DESIGN 8.1 / phase 4) --
+	// --- Pro: the two semantic features (DESIGN 8.1) ---------------------------
 
 	/**
 	 * True when the two semantic Pro features can actually run: Pro AND a desktop engine that
 	 * is installed. Three separate conditions, kept separate on purpose — a mobile Pro user is
 	 * not being paywalled, and telling them they are would be a lie.
+	 *
+	 * This is the COMMAND-PALETTE predicate only (checkCallback is synchronous and cannot
+	 * await). It is not the gate: the gate is inside SemanticService, which re-checks the
+	 * entitlement and the engine on every call. A stale `engineReady` can therefore only cost
+	 * a command its palette entry, never leak a Pro feature to a free user.
 	 */
 	canUseSemanticPro(): boolean {
-		return this.settings.isPro && this.engine !== null && this.engineReady;
+		return (
+			isFeatureEnabled(FEATURES, "topicGroups", this.settings.isPro) &&
+			this.engine !== null &&
+			this.engineReady
+		);
 	}
 
 	async refreshEngineStatus(): Promise<EngineStatus | null> {
@@ -470,32 +519,96 @@ export default class NoteDecayPlugin extends Plugin {
 		return status ?? (await this.engine.status());
 	}
 
+	/** The rows a Pro run operates on: the review queue exactly as the user has configured it. */
+	private queueRows(): QueueRow[] {
+		return buildQueue(this.index.all(), {
+			sort: "score",
+			minScore: this.settings.queueMinScore,
+			excludeFolders: this.settings.excludeFolders,
+		});
+	}
+
 	/**
-	 * PRO, PHASE 4. The queue clustered by topic, so one review session covers one subject.
+	 * PRO. Cluster the review queue by topic, so one session covers one subject (DESIGN 8.1).
 	 *
-	 * The gate, the command, the settings row and the button are all wired NOW — what is not
-	 * wired is the `query` call, because the semantic engine has no published release to pin
-	 * yet (shared/engine/engineRelease.mjs still reports ENGINE_RELEASE_PINNED === false, and
-	 * EngineHost refuses to download an executable it cannot checksum). This says so instead
-	 * of failing silently.
+	 * Every failure path here ends in `showSemanticBlock`, which SAYS WHY. None of them ends in
+	 * an empty queue — "the engine is not installed" and "your notes share no topic" are opposite
+	 * claims, and the whole point of the block type is that they cannot be confused.
 	 */
-	groupQueueByTopic(): void {
-		if (!this.settings.isPro) return; // The caller (ProGate) has already shown the upsell.
+	async groupQueueByTopic(): Promise<void> {
+		const rows = this.queueRows();
+		const progress = new ProgressNotice(FEATURES.topicGroups.label);
+		const result = await this.semantic.topicGroups(rows, (p) => progress.update(p));
+		progress.done();
+
+		if (!result.ok) {
+			this.showBlock(result.block, FEATURES.topicGroups.label, "topicGroups");
+			return;
+		}
+
+		this.topics = result.value;
+		await this.activateQueue();
+		this.renderQueueViews();
+		const groups = result.value.groups.length;
 		new Notice(
-			this.engine
-				? "Topic grouping needs the semantic engine, which is not available in this release yet."
-				: "Topic grouping needs the semantic engine, which runs on desktop only."
+			groups > 0
+				? `Grouped ${rows.length === 0 ? 0 : Math.min(rows.length, MAX_SESSION_NOTES)} notes into ${groups} topic${groups === 1 ? "" : "s"}.`
+				: "The engine found no topic shared by two or more notes in the queue."
 		);
 	}
 
-	/** PRO, PHASE 4. See groupQueueByTopic(). */
-	findSuperseded(): void {
-		if (!this.settings.isPro) return;
-		new Notice(
-			this.engine
-				? "Superseded-note detection needs the semantic engine, which is not available in this release yet."
-				: "Superseded-note detection needs the semantic engine, which runs on desktop only."
-		);
+	/** Back to the flat worklist. Free — a lapsed licence must not strand the user in a view. */
+	clearTopicGroups(): void {
+		this.topics = null;
+		this.renderQueueViews();
+	}
+
+	/**
+	 * PRO. The stale notes a NEWER note has already replaced (DESIGN 8.1, 6.5: max-sim >= 0.78
+	 * from >= 2 newer notes).
+	 */
+	async findSuperseded(): Promise<void> {
+		const rows = this.queueRows();
+		const progress = new ProgressNotice(FEATURES.superseded.label);
+		const result = await this.semantic.superseded(rows, (p) => progress.update(p));
+		progress.done();
+
+		if (!result.ok) {
+			this.showBlock(result.block, FEATURES.superseded.label, "superseded");
+			return;
+		}
+		new SupersededModal(this, result.value, rows.length).open();
+	}
+
+	/**
+	 * The engine could not run. Say which of the five reasons it was, and — when the answer is
+	 * "it is not installed" — offer the consent modal. NOTHING downloads without a click in it.
+	 */
+	private showBlock(
+		block: SemanticBlock,
+		feature: string,
+		upsell: keyof typeof PRO_UPSELL
+	): void {
+		showSemanticBlock(this, block, feature, upsell);
+	}
+
+	/**
+	 * The ONLY caller of `EngineHost.install()` in this add-on, and it is reached only from the
+	 * confirm button of the shared EngineInstallModal (DESIGN 7.2 — the consent gate).
+	 */
+	installEngine(): void {
+		const progress = new Notice("Downloading the semantic engine…", 0);
+		void this.semantic
+			.install((p: InstallProgress) => progress.setMessage(installMessage(p)))
+			.then(async (result) => {
+				progress.hide();
+				if (!result.ok) {
+					this.showBlock(result.block, "The semantic engine", "topicGroups");
+					return;
+				}
+				await this.refreshEngineStatus();
+				new Notice(`Engine ready — ${result.value.model}, ${result.value.dim}-dim.`);
+			});
 	}
 
 	// --- activity log ---------------------------------------------------------
@@ -511,6 +624,63 @@ export default class NoteDecayPlugin extends Plugin {
 	private clearTimer(timer: number | null): void {
 		if (timer !== null) window.clearTimeout(timer);
 	}
+}
+
+/**
+ * A Notice that stays up for the length of a semantic run and reports what it is doing.
+ *
+ * The first run on a real vault embeds every note, which is minutes, not milliseconds. A
+ * spinner-less UI that simply goes quiet for four minutes is indistinguishable from one that
+ * has crashed — and the user's next move is to click the button again, which cancels the run
+ * they were waiting for.
+ */
+class ProgressNotice {
+	private readonly notice: Notice;
+
+	constructor(private readonly feature: string) {
+		// Duration 0 = stays until hide(). It is hidden in done(), which every caller runs in
+		// the success AND the failure path.
+		this.notice = new Notice(`${feature}: starting…`, 0);
+	}
+
+	update(progress: SemanticProgress): void {
+		const { phase, done, total } = progress;
+		const label = phase === "indexing" ? "Reading notes" : "Comparing notes";
+		this.notice.setMessage(
+			total > 0
+				? `${this.feature}: ${label} ${done} / ${total}…`
+				: `${this.feature}: ${label}…`
+		);
+	}
+
+	done(): void {
+		this.notice.hide();
+	}
+}
+
+/** DESIGN 7.2's progress copy: "Downloading engine… 18.4 MB / 44.7 MB", then the later phases. */
+function installMessage(progress: InstallProgress): string {
+	switch (progress.phase) {
+		case "downloading": {
+			const done = megabytes(progress.done ?? 0);
+			const total = progress.total ? ` / ${megabytes(progress.total)}` : "";
+			return `Downloading engine… ${done}${total}`;
+		}
+		case "verifying":
+			return "Verifying the download…";
+		case "extracting":
+			return "Extracting…";
+		case "starting":
+			return "Starting the engine…";
+		case "ready":
+			return progress.message ?? "Engine ready.";
+		default:
+			return "Working…";
+	}
+}
+
+function megabytes(bytes: number): string {
+	return `${(bytes / 1_048_576).toFixed(1)} MB`;
 }
 
 function basename(path: string): string {

@@ -53,12 +53,14 @@ Half-lives, weights, band thresholds, the frontmatter key, and the excluded fold
 
 ### Pro — $29 one-time, unlocks all five Second Read add-ons
 
+> **Pro is not on sale yet.** There is no checkout, and the add-on does not pretend there is: the Pro card in settings says "purchasing opens soon" instead of showing a buy button. The suite launches with all five add-ons and a checkout that emails your key automatically. If you already have a key, paste it into Settings → Note Decay → License.
+
 Pro adds the two features that need to compare notes **by meaning** rather than by metadata:
 
-- **Group the queue by topic** — cluster the review queue so one session covers one subject.
-- **Superseded-note detection** — flag a stale note whose content is now largely covered by *newer* notes. The ones you rewrote without noticing.
+- **Group the queue by topic** — cluster the review queue so one session covers one subject. Notes the engine finds no topic for are still listed, under their own heading; grouping never hides a note.
+- **Superseded-note detection** — flag a stale note whose content is now largely covered by *newer* notes. The ones you rewrote without noticing. A note is only flagged when **two or more** newer notes cover it closely (cosine ≥ 0.78 against the note's own text) — one close match is a follow-up, not a replacement.
 
-Both need the local semantic engine (see below), and both are **not yet available** — the engine has no published build as of this release. Everything in the free tier works now.
+Both need the local semantic engine (see below), which runs on your computer and sends nothing anywhere. **The engine has no published build as of this release**, so both features are switched off and say so when you reach for them. They do not show you an empty list — an empty list would look like a clean vault, and that would be a lie.
 
 One key unlocks Pro in all five Second Read add-ons: Note Decay, Standing Questions, Effort Index, Prior Art, and Unwritten. Licenses are verified **offline** with an Ed25519 signature built into the add-on. No account, no server, no network request.
 
@@ -102,6 +104,7 @@ The stale-note dimming decorates Obsidian's own file list, which has no public A
 | Set decay profile for this note | Writes `decay:` into the note's frontmatter. |
 | Export decay scores as CSV | Writes `Decay Scores.csv` into the vault. |
 | Group the review queue by topic | **Pro + engine.** Hidden from the palette when unavailable. |
+| Find superseded notes | **Pro + engine.** Hidden from the palette when unavailable. |
 
 No default hotkeys — bind your own in Settings → Hotkeys.
 

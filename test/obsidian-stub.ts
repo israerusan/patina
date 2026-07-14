@@ -29,11 +29,22 @@ export class FakeEl {
 	}
 
 	// --- Obsidian's HTMLElement extensions ---
-	createEl(tag: string, options?: { cls?: string; text?: string; href?: string }): FakeEl {
+	createEl(
+		tag: string,
+		options?: {
+			cls?: string;
+			text?: string;
+			href?: string;
+			value?: string;
+			attr?: Record<string, string>;
+		}
+	): FakeEl {
 		const child = new FakeEl(tag);
 		if (options?.cls) options.cls.split(/\s+/).filter(Boolean).forEach((c) => child.classes.add(c));
 		if (options?.text) child.textContent = options.text;
 		if (options?.href) child.attrs.href = options.href;
+		if (options?.value !== undefined) child.attrs.value = options.value;
+		if (options?.attr) Object.assign(child.attrs, options.attr);
 		child.parent = this;
 		this.children.push(child);
 		return child;
@@ -226,9 +237,19 @@ export class ButtonComponent {
 	icon = "";
 	tooltip = "";
 	disabled = false;
+	cta = false;
+	warning = false;
 	private handler: (() => unknown) | null = null;
 	setButtonText(text: string): this {
 		this.label = text;
+		return this;
+	}
+	setCta(): this {
+		this.cta = true;
+		return this;
+	}
+	setWarning(): this {
+		this.warning = true;
 		return this;
 	}
 	setIcon(icon: string): this {
@@ -252,6 +273,53 @@ export class ButtonComponent {
 	}
 }
 
+/** The license key box and the excluded-folders box. `inputEl` is a real FakeEl — the tab
+ *  reaches into it for `rows` and `addClass`. */
+export class TextAreaComponent {
+	value = "";
+	placeholder = "";
+	inputEl = new FakeEl("textarea");
+	private handler: ((value: string) => unknown) | null = null;
+	setPlaceholder(text: string): this {
+		this.placeholder = text;
+		return this;
+	}
+	setValue(value: string): this {
+		this.value = value;
+		return this;
+	}
+	onChange(handler: (value: string) => unknown): this {
+		this.handler = handler;
+		return this;
+	}
+	type(value: string): unknown {
+		this.value = value;
+		return this.handler?.(value);
+	}
+}
+
+export class DropdownComponent {
+	value = "";
+	options: Record<string, string> = {};
+	private handler: ((value: string) => unknown) | null = null;
+	addOption(value: string, label: string): this {
+		this.options[value] = label;
+		return this;
+	}
+	setValue(value: string): this {
+		this.value = value;
+		return this;
+	}
+	onChange(handler: (value: string) => unknown): this {
+		this.handler = handler;
+		return this;
+	}
+	select(value: string): unknown {
+		this.value = value;
+		return this.handler?.(value);
+	}
+}
+
 export class Setting {
 	/** Every Setting built since the last reset, so a test can drive the real controls. */
 	static instances: Setting[] = [];
@@ -268,6 +336,8 @@ export class Setting {
 	toggles: ToggleComponent[] = [];
 	sliders: SliderComponent[] = [];
 	texts: TextComponent[] = [];
+	textAreas: TextAreaComponent[] = [];
+	dropdowns: DropdownComponent[] = [];
 	buttons: ButtonComponent[] = [];
 	extraButtons: ButtonComponent[] = [];
 
@@ -311,6 +381,18 @@ export class Setting {
 		cb(text);
 		return this;
 	}
+	addTextArea(cb: (text: TextAreaComponent) => unknown): this {
+		const text = new TextAreaComponent();
+		this.textAreas.push(text);
+		cb(text);
+		return this;
+	}
+	addDropdown(cb: (dropdown: DropdownComponent) => unknown): this {
+		const dropdown = new DropdownComponent();
+		this.dropdowns.push(dropdown);
+		cb(dropdown);
+		return this;
+	}
 	addButton(cb: (button: ButtonComponent) => unknown): this {
 		const button = new ButtonComponent();
 		this.buttons.push(button);
@@ -324,8 +406,10 @@ export class Setting {
 		return this;
 	}
 	/** Every control on this row — a Pro row for a free user must have none. */
-	controls(): Array<ToggleComponent | SliderComponent | TextComponent | ButtonComponent> {
-		return [...this.toggles, ...this.sliders, ...this.texts, ...this.buttons];
+	controls(): Array<
+		ToggleComponent | SliderComponent | TextComponent | TextAreaComponent | DropdownComponent | ButtonComponent
+	> {
+		return [...this.toggles, ...this.sliders, ...this.texts, ...this.textAreas, ...this.dropdowns, ...this.buttons];
 	}
 }
 
@@ -357,17 +441,34 @@ export class ItemView extends Component {
 	}
 }
 
+/** Every modal opened during a test, newest last — so a test can read what the user was shown. */
+export const openedModals: Modal[] = [];
+
+/**
+ * `open()` RUNS `onOpen()`, exactly as Obsidian does.
+ *
+ * A stub whose open() is a no-op makes every modal in the add-on untestable — and the modals
+ * are where the honest-degradation copy lives ("the engine is not installed", "purchasing opens
+ * soon"). A test against a modal that never renders would pass on a modal that renders nothing.
+ */
 export class Modal extends Component {
 	contentEl = new FakeEl();
 	titleEl = new FakeEl();
+	isOpen = false;
+
 	constructor(public app: unknown) {
 		super();
 	}
+
 	open(): void {
-		/* no-op */
+		this.isOpen = true;
+		openedModals.push(this);
+		(this as { onOpen?: () => void }).onOpen?.();
 	}
+
 	close(): void {
-		/* no-op */
+		this.isOpen = false;
+		(this as { onClose?: () => void }).onClose?.();
 	}
 }
 
@@ -452,8 +553,24 @@ export function normalizePath(path: string): string {
 export const notices: string[] = [];
 
 export class Notice {
-	constructor(message: string) {
+	hidden = false;
+
+	constructor(
+		public message: string,
+		public duration?: number
+	) {
 		notices.push(message);
+	}
+
+	/** The real Notice's progress API — a long semantic run rewrites one Notice, not fifty. */
+	setMessage(message: string): this {
+		this.message = message;
+		notices.push(message);
+		return this;
+	}
+
+	hide(): void {
+		this.hidden = true;
 	}
 }
 

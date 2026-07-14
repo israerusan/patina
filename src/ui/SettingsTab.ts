@@ -1,17 +1,19 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
 import type NoteDecayPlugin from "../main";
 import { PROFILE_LABELS } from "../settings";
-import { createExternalLink } from "./links";
+import { renderPurchaseCta } from "./links";
+import { EngineInstallModal } from "../shared/engine/EngineInstallModal";
 import {
 	PRO_NAME,
 	PRO_PRICE_LABEL,
 	PRO_TAGLINE,
 	PRO_UNLOCK_SUMMARY,
-	PURCHASE_URL,
+	PURCHASE_AVAILABLE,
 	SUITE_NAME,
 } from "../product";
 import { FEATURES } from "../core/features.mjs";
 import { proFeatureKeys } from "../shared/featureGates.mjs";
+import { engineInstallDir } from "../core/engineCopy.mjs";
 import { ENGINE_RELEASE_PINNED, ENGINE_VERSION } from "../shared/engine/engineRelease.mjs";
 import type { EngineStatus } from "../shared/engine/EngineHost";
 
@@ -43,12 +45,25 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 		setting.nameEl.createSpan({ cls: "note-decay-pro-pill", text: "Pro" });
 	}
 
+	/**
+	 * The inline upgrade affordance on a locked row.
+	 *
+	 * While there is no checkout there is nothing to link to, and a link to a generic tip-jar
+	 * page is not an upgrade path — it is a way to take somebody's money and send them nothing.
+	 * So the row says where Pro comes from instead, and the Pro card below carries the detail.
+	 */
 	private appendUpgrade(setting: Setting): void {
 		setting.descEl.appendText(" ");
-		createExternalLink(setting.descEl, {
+		if (!PURCHASE_AVAILABLE) {
+			setting.descEl.createSpan({
+				cls: "note-decay-upgrade-inline",
+				text: `Included in ${PRO_NAME} — purchasing opens soon.`,
+			});
+			return;
+		}
+		renderPurchaseCta(setting.descEl, {
 			cls: "note-decay-upgrade-inline",
-			text: "Upgrade to Pro",
-			url: PURCHASE_URL,
+			label: "Upgrade to Pro",
 		});
 	}
 
@@ -124,6 +139,11 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 	 * The title is a styled div, not an <h4>: `no-manual-html-headings` rejects a hand-rolled
 	 * heading element, and this is a card inside the License section, not a settings section
 	 * of its own — a real `.setHeading()` here would put it in the tab's outline.
+	 *
+	 * THE CARD STAYS; THE BUY BUTTON DOES NOT — not until a checkout exists. The card's job is
+	 * to say what Pro IS, and that is true whether or not it is on sale. `renderPurchaseCta`
+	 * decides which of the two it renders, from the single `PURCHASE_URL` constant in
+	 * product.ts, and it is the only thing in the add-on allowed to make that decision.
 	 */
 	private renderProCard(parent: HTMLElement): void {
 		const card = parent.createDiv({ cls: "note-decay-pro-card" });
@@ -135,11 +155,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 			list.createEl("li", { text: FEATURES[key].label });
 		}
 
-		createExternalLink(card, {
-			cls: "note-decay-pro-btn",
-			text: "Unlock Pro",
-			url: PURCHASE_URL,
-		});
+		renderPurchaseCta(card, { cls: "note-decay-pro-btn", label: "Unlock Pro" });
 	}
 
 	// --- Scoring ----------------------------------------------------------------
@@ -315,11 +331,16 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 
 		this.proRow(
 			FEATURES.topicGroups.label,
-			"Clusters the review queue by topic so one session covers one subject. Needs the semantic engine.",
+			"Clusters the review queue by topic so one session covers one subject. Needs the semantic engine, which runs on your computer and never sends anything over the network.",
 			(setting) => {
 				setting.addButton((button) =>
-					button.setButtonText("Group the queue").onClick(() => {
-						this.plugin.groupQueueByTopic();
+					button.setButtonText("Group the queue").onClick(async () => {
+						button.setDisabled(true);
+						try {
+							await this.plugin.groupQueueByTopic();
+						} finally {
+							button.setDisabled(false);
+						}
 					})
 				);
 			}
@@ -330,8 +351,13 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 			"Flags a stale note whose content is now largely covered by NEWER notes — the ones you rewrote without noticing. Needs the semantic engine.",
 			(setting) => {
 				setting.addButton((button) =>
-					button.setButtonText("Find superseded notes").onClick(() => {
-						this.plugin.findSuperseded();
+					button.setButtonText("Find superseded notes").onClick(async () => {
+						button.setDisabled(true);
+						try {
+							await this.plugin.findSuperseded();
+						} finally {
+							button.setDisabled(false);
+						}
 					})
 				);
 			}
@@ -357,21 +383,44 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 			text: "Pro features that compare notes by meaning need a local engine — a self-contained program that runs on your computer and never sends anything over the network. It is about 45 MB to download and 100 MB on disk.",
 		});
 
-		// The download button is deliberately INERT until the engine release is pinned. The
-		// shared EngineHost refuses to download while ENGINE_RELEASE_PINNED is false (there is
-		// no SHA-256 to verify against, and downloading an unverified executable is the one
-		// thing this whole design exists to prevent). Showing an enabled button that always
-		// fails would be worse than showing the truth.
+		// The button is INERT until the engine release is pinned, and the reason is not a policy
+		// choice — it is that there is no SHA-256 to verify a download against, and EngineHost
+		// refuses (UnpinnedReleaseError) to fetch an executable it cannot checksum. Showing an
+		// enabled button that always fails would be worse than showing the truth.
+		//
+		// When it IS pinned, this opens the SHARED EngineInstallModal — the consent gate — and
+		// that modal's confirm handler is the only caller of install() in the add-on. Nothing is
+		// downloaded, extracted, chmod-ed or run before that click.
+		const plan = host.plan();
 		new Setting(box)
 			.setName("Download engine")
 			.setDesc(
-				ENGINE_RELEASE_PINNED
+				ENGINE_RELEASE_PINNED && plan
 					? `Downloads engine ${ENGINE_VERSION}, verifies its SHA-256, and runs it. You will be shown the exact URL, version, checksum, and install path before anything is downloaded.`
-					: "The engine build is not published for this release yet. Semantic Pro features stay off until it is; everything else in this add-on works now."
+					: !ENGINE_RELEASE_PINNED
+						? "The engine build is not published for this release yet. Semantic Pro features stay off until it is; everything else in this add-on works now."
+						: (host.planError() ??
+							"There is no engine build for this computer. Point the add-on at one you built yourself, below.")
 			)
 			.addButton((button) => {
-				button.setButtonText("Download engine").setDisabled(true);
-				if (!ENGINE_RELEASE_PINNED) button.setTooltip("Not available in this release.");
+				button.setButtonText("Download engine");
+				if (!ENGINE_RELEASE_PINNED || !plan) {
+					button.setDisabled(true);
+					button.setTooltip(
+						ENGINE_RELEASE_PINNED
+							? "No engine build for this computer."
+							: "Not available in this release."
+					);
+					return;
+				}
+				button.onClick(() => {
+					new EngineInstallModal(this.app, {
+						plan,
+						installDir: engineInstallDir(plan.target, plan.version),
+						downloadSizeLabel: "about 45 MB (about 100 MB on disk)",
+						onConfirm: () => this.plugin.installEngine(),
+					}).open();
+				});
 			});
 
 		new Setting(box)

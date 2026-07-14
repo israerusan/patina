@@ -6,8 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [1.0.0] - 2026-07-14
 
-First release. The free tier is complete; the two Pro semantic features are gated and ship
-inert until the semantic engine has a published build.
+First release. The free tier is complete. The two Pro semantic features are **built**, and they
+run the moment a semantic engine is available — which, in this release, means a user who points
+the add-on at an engine binary they already have. There is no published engine build to download
+yet, and there is no checkout yet, and the add-on says both of those things out loud rather than
+selling something it cannot deliver.
 
 ### Added
 
@@ -36,12 +39,40 @@ inert until the semantic engine has a published build.
   Second Read add-ons. Revocation is checked before the signature, so a leaked key can be
   killed without rotating the keypair and revoking Pro for every paying customer.
 
-### Gated, not yet available
+### Added — Pro (semantic)
 
-- **Group the queue by topic** and **superseded-note detection** are Pro + semantic-engine
-  features. The gate, the commands, and the settings rows are wired; the engine has no
-  published release to pin yet, so both report that plainly instead of failing silently. The
-  "Download engine" button is inert until a build is published — the shared engine host
-  refuses to download an executable it cannot verify a checksum for.
+- **Group the queue by topic.** The review queue is clustered into topics so one session covers
+  one subject. Clusters are connected components over the engine's cosine neighbours (≥ 0.60),
+  symmetrized so a truncated k-NN list cannot split a real topic in half. A note the engine
+  finds no topic for is still listed, under its own heading — grouping never loses a note.
+- **Superseded-note detection.** A stale note is flagged only when **two or more** notes that
+  are genuinely newer cover it at ≥ 0.78 cosine against the note's own chunks. One close match
+  is a follow-up, not a replacement; chunk hits are folded per note, so a single verbose note
+  cannot clear a threshold designed to need two independent ones. "Newer" is re-checked against
+  the vault's own mtimes, not taken on the engine's word.
+- Both go through the **shared, refcounted engine broker** (five add-ons, one engine process,
+  never five), chunk with the **shared chunker** (so the chunk ids in the shared index stay
+  coherent across the suite), and cancel a superseded run through the engine's `cancel` RPC.
+- Excluded folders are never sent to the engine.
+
+### Honest degradation
+
+- With no engine, the Pro features **do not return an empty list** — an empty list is
+  indistinguishable from a clean vault. They open a dialog that says which of the five things
+  went wrong (free tier, mobile, no build for this platform, no published engine, or a broken
+  install), and when the answer is "not installed", they offer to install it through the shared
+  consent modal, which names the URL, version, SHA-256 and install path. **Nothing is
+  downloaded, extracted, made executable or run before that click.**
+- The engine has **no published build** in this release, so the download button stays disabled
+  (the engine host refuses to fetch an executable it cannot checksum) and the Pro features say
+  so. The "Path to an existing engine" setting works today.
+
+### Changed
+
+- **The "Unlock Pro" buy button is gone until there is something to buy.** It pointed at a
+  generic tip-jar page that cannot deliver a license key: a user who clicked it and paid would
+  have bought nothing. The Pro card still renders — you are entitled to know what Pro is — and
+  says "purchasing opens soon". `manifest.fundingUrl` is removed for the same reason. One
+  constant, `PURCHASE_URL` in `src/product.ts`, turns every CTA in the add-on back on.
 
 [1.0.0]: https://github.com/israerusan/note-decay/releases/tag/1.0.0
