@@ -281,3 +281,63 @@
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
+
+/* --- engine consent modal (shared/engine/EngineInstallModal.ts) ------------
+ *
+ * The block that file's header requires every vendoring plugin to carry. It is here even
+ * though the modal is not reachable in 1.0.0 (ENGINE_RELEASE_PINNED is false, so nothing can
+ * be downloaded and nothing constructs the modal): the moment the engine ships, the person
+ * wiring the download must inherit a modal that LOOKS like a consent dialog — the one screen
+ * in this add-on that asks the user to let it fetch and run a binary is the last one that can
+ * afford to render as unstyled text. The class names are the modal's, not this plugin's, so
+ * they are prefixed `second-read-engine-` and are asserted against the modal source in
+ * test/manifest-contract.test.mjs — a renamed class there fails the build here.
+ */
+
+.second-read-engine-modal .second-read-engine-lede {
+	font-weight: var(--font-semibold);
+}
+
+.second-read-engine-facts {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: var(--size-2-2) var(--size-4-3);
+	margin: var(--size-4-3) 0;
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-secondary);
+}
+
+.second-read-engine-fact {
+	display: contents;
+}
+
+.second-read-engine-fact-label {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.second-read-engine-fact-value {
+	min-width: 0;
+}
+
+.second-read-engine-fact-text {
+	display: block;
+	overflow-wrap: anywhere;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	user-select: text;
+}
+
+.second-read-engine-fact-note {
+	display: block;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.second-read-engine-explainer,
+.second-read-engine-source {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}

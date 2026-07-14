@@ -1,5 +1,6 @@
 import type { App, TFile } from "obsidian";
 import { decayScore, inboundRecency, profileFromFrontmatter } from "./core/decay.mjs";
+import { isExcluded } from "./core/queue.mjs";
 import type { DecayOptions, DecayScore } from "./core/decay.d.mts";
 import type { QueueRow } from "./core/queue.d.mts";
 import type { SignalsIndex } from "./shared/signals/signalsAggregate.mjs";
@@ -58,6 +59,17 @@ export class DecayIndex {
 	/**
 	 * Rescore every markdown note. Synchronous on purpose — it reads only from
 	 * `metadataCache` and the `TFile` stats, both already in memory.
+	 *
+	 * EXCLUDED FOLDERS ARE DROPPED HERE, at the source, and not in `buildQueue` alone. The
+	 * setting promises the note is "never scored or listed"; filtering only inside the queue
+	 * kept that promise for the queue and the CSV and broke it everywhere else — the file
+	 * explorer still dimmed the row, and the status bar still announced "Decay 91 · decayed"
+	 * on a note in a folder the user had explicitly excluded. Every surface reads the index,
+	 * so the index is the one place where the exclusion is worth enforcing.
+	 *
+	 * The excluded notes DO still contribute to `inboundRecency`: a link from an archived note
+	 * is still a link, and pretending the Archive folder does not exist would make every note
+	 * it points at look more abandoned than it is.
 	 */
 	rebuild(settings: NoteDecaySettings, now: number = Date.now()): void {
 		const files: TFile[] = this.app.vault.getMarkdownFiles();
@@ -70,6 +82,7 @@ export class DecayIndex {
 
 		const next = new Map<string, QueueRow>();
 		for (const file of files) {
+			if (isExcluded(file.path, settings.excludeFolders)) continue;
 			const signals = this.signals[file.path];
 			const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 			const profile = profileFromFrontmatter(frontmatter, settings.frontmatterKey);

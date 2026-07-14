@@ -66,11 +66,41 @@ assert.equal(
 );
 
 // --- The staged community-plugins entry must not drift from the manifest -----
+// This file is the PR body for obsidianmd/obsidian-releases. Every field in it is submitted
+// verbatim, so a placeholder here is a placeholder in the public directory listing: the entry
+// shipped `"author": "saiken"` against a manifest that says "Israel Avila", which is both a
+// review flag (the author must match the repo owner) and a lie in the plugin browser.
 const staged = JSON.parse(fs.readFileSync(path.join(root, "community-plugins.json"), "utf8"));
 const entry = staged.find((row) => row.id === manifest.id);
 assert.ok(entry, "community-plugins.json must stage an entry for this add-on");
 assert.equal(entry.name, manifest.name);
 assert.equal(entry.description, manifest.description);
+assert.equal(entry.author, manifest.author, "the staged author must be the manifest author");
+assert.ok(
+	typeof entry.repo === "string" && /^[\w.-]+\/[\w.-]+$/.test(entry.repo),
+	"community-plugins.json must stage a user/repo"
+);
+
+// --- Every class the vendored engine modal renders must exist in styles.css ---
+// EngineInstallModal is shared code and styles itself entirely through class names (no
+// el.style, no injected <style>), so a plugin that vendors the file and forgets its
+// stylesheet ships an UNSTYLED consent dialog — the one screen that asks the user to let this
+// add-on download and execute a binary. It is unreachable in 1.0.0 (ENGINE_RELEASE_PINNED is
+// false) and tree-shakes out of main.js; this asserts the CSS is there for whoever wires it,
+// and fails loudly if a class is renamed upstream.
+const modalSource = fs.readFileSync(path.join(root, "src/shared/engine/EngineInstallModal.ts"), "utf8");
+const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+const modalClasses = new Set(
+	[...modalSource.matchAll(/cls:\s*"(second-read-engine-[\w-]+)"/g)].map((m) => m[1])
+);
+// addClass("second-read-engine-modal") is the root, and it is set, not passed as `cls`.
+for (const cls of [...modalClasses, "second-read-engine-modal"]) {
+	assert.ok(
+		new RegExp(`\\.${cls}\\b`).test(styles),
+		`styles.css is missing a rule for .${cls} — the vendored consent modal would render unstyled`
+	);
+}
+assert.ok(modalClasses.size >= 5, "the modal's class list was not parsed — this check would pass vacuously");
 
 // --- No static import of a Node builtin anywhere in src ----------------------
 // A static `import "child_process"` compiles to a TOP-LEVEL require() in the CJS bundle and

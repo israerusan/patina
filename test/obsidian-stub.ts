@@ -372,15 +372,81 @@ export class Modal extends Component {
 }
 
 export class Plugin extends Component {
+	/** Stands in for data.json. A test writes it, `loadData()` reads it, exactly like the disk. */
+	data: unknown = null;
+
 	constructor(
 		public app: unknown,
 		public manifest: unknown
 	) {
 		super();
 	}
+
+	async loadData(): Promise<unknown> {
+		return this.data;
+	}
+
+	async saveData(data: unknown): Promise<void> {
+		// Round-trip through JSON, because data.json does: this is what turns a settings object
+		// holding a Map or an undefined into whatever actually comes back on the next load.
+		this.data = JSON.parse(JSON.stringify(data));
+	}
+
+	addStatusBarItem(): FakeEl {
+		return new FakeEl();
+	}
+	addCommand(): void {
+		/* no-op */
+	}
+	addSettingTab(): void {
+		/* no-op */
+	}
+	registerView(): void {
+		/* no-op */
+	}
+	registerInterval(id: number): number {
+		return id;
+	}
+	registerDomEvent(el: FakeEl, type: string, handler: (event: unknown) => void): void {
+		el.addEventListener(type, handler);
+	}
+	register(): void {
+		/* no-op */
+	}
 }
 
 export class MarkdownView extends ItemView {}
+
+export class SuggestModal<T> extends Modal {
+	limit = 0;
+	emptyStateText = "";
+	inputEl = new FakeEl("input");
+	setPlaceholder(_text: string): void {
+		/* no-op */
+	}
+	getSuggestions(_query: string): T[] {
+		return [];
+	}
+}
+
+/**
+ * The desktop-only vault adapter. EngineHost only ever asks `adapter instanceof
+ * FileSystemAdapter`, and for a stub vault the honest answer is "no" — so this is a class that
+ * nothing is an instance of, on purpose.
+ */
+export class FileSystemAdapter {}
+
+export class TFile {
+	path = "";
+	basename = "";
+	extension = "md";
+	stat = { mtime: 0, ctime: 0 };
+}
+
+/** Obsidian's own: collapse slashes, drop a leading/trailing one. Enough for a vault path. */
+export function normalizePath(path: string): string {
+	return path.replace(/\\/g, "/").replace(/\/{2,}/g, "/").replace(/^\/+|\/+$/g, "");
+}
 
 /** Notices raised during a test, so a test can assert what the user was told. */
 export const notices: string[] = [];

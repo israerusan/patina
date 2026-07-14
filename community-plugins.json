@@ -2,7 +2,7 @@
   {
     "id": "note-decay",
     "name": "Note Decay",
-    "author": "saiken",
+    "author": "Israel Avila",
     "description": "Score every note's staleness from edits, opens, and inbound links, then work through a decay-ranked review queue.",
     "repo": "israerusan/note-decay"
   }

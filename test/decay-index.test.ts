@@ -49,12 +49,22 @@ const files = [
 	file("linked.md", 400, 400), // ancient, but a fresh note links to it
 	file("evergreen.md", 900),
 	file("Archive/old.md", 900),
+	file("Archive/recent-note.md", 1), // in an EXCLUDED folder, and freshly edited
+	// NOT excluded: "Archive" must not swallow "Archived Ideas". Aged well short of rotting.md
+	// so that it is unambiguously in the index without displacing the head of the worklist.
+	file("Archived Ideas/keep.md", 120),
+	file("cited-by-archive.md", 400), // ancient, and the only thing linking it is archived
 ];
 
 const resolvedLinks = {
 	// A note edited yesterday still points at linked.md — so its INBOUND signal is fresh
 	// even though the note itself has not been touched in over a year.
 	"fresh.md": { "linked.md": 1 },
+	// An EXCLUDED note links to cited-by-archive.md. Excluding a folder means "do not score or
+	// list the notes in it" — it does not mean "pretend those notes' links do not exist". A
+	// link from the Archive is still a link, and dropping it would make everything the Archive
+	// cites look more abandoned than it is.
+	"Archive/recent-note.md": { "cited-by-archive.md": 1 },
 };
 
 const signals: SignalsIndex = {
@@ -126,6 +136,42 @@ async function main(): Promise<void> {
 	assert.equal(evergreen.band, "exempt", "frontmatter must reach the scorer");
 	assert.equal(evergreen.score, 0);
 
+	// --- an EXCLUDED note is never scored at all ---------------------------------
+	// The setting says "never scored or listed". It used to be honoured only inside buildQueue,
+	// so the queue and the CSV obeyed it and NOTHING ELSE did: the file explorer still dimmed
+	// `Archive/2019 Retro.md`, and the status bar still announced "Decay 91 · decayed" on a note
+	// in a folder the user had told the plugin to leave alone. Both of those surfaces read the
+	// INDEX, so the index is where the exclusion has to live.
+	assert.equal(index.get("Archive/old.md"), null, "an excluded note is not in the index");
+	assert.equal(
+		index.scoreOf("Archive/old.md"),
+		null,
+		"…so the status bar has nothing to report for it — this is the bug, verbatim"
+	);
+	assert.equal(
+		index.get("Archive/recent-note.md"),
+		null,
+		"exclusion is by PATH, not by score — a fresh note in an excluded folder is excluded too"
+	);
+	// ExplorerDecorator.paint() dims from `index.get(path)`. Null in, no attribute out.
+	assert.ok(
+		!index.all().some((row) => row.path.startsWith("Archive/")),
+		"and the explorer, which paints from all()/get(), inherits it for free"
+	);
+	assert.ok(
+		index.get("Archived Ideas/keep.md"),
+		'"Archive" must not swallow "Archived Ideas" — the prefix guard is what makes exclusion safe to apply this early'
+	);
+
+	// --- but an excluded note is still a LINK SOURCE ------------------------------
+	const cited = index.get("cited-by-archive.md");
+	assert.ok(cited, "cited-by-archive.md must be scored");
+	assert.equal(
+		cited.newestInboundMtime,
+		ago(1),
+		"a link from an excluded note still counts — excluding a folder hides its notes, it does not delete their links"
+	);
+
 	// --- the queue drops the exempt and the excluded -----------------------------
 	const queue = buildQueue(index.all(), {
 		sort: settings.queueSort,
@@ -152,7 +198,8 @@ async function main(): Promise<void> {
 		console.error = realError;
 	}
 	degraded.rebuild(settings, NOW);
-	assert.equal(degraded.all().length, files.length, "a corrupt log must not empty the index");
+	const scorable = files.filter((f) => !f.path.startsWith("Archive/")).length;
+	assert.equal(degraded.all().length, scorable, "a corrupt log must not empty the index");
 	assert.ok(degraded.get("rotting.md"), "every note is still scored, just without open history");
 }
 

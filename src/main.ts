@@ -78,7 +78,9 @@ export default class NoteDecayPlugin extends Plugin {
 			void this.activateQueue();
 		});
 
-		this.explorer = new ExplorerDecorator(this, activeDocument, this.index);
+		this.explorer = new ExplorerDecorator(this, activeDocument, this.index, () =>
+			this.explorerContainer()
+		);
 		this.explorer.start();
 		this.explorer.setEnabled(this.settings.dimInExplorer);
 
@@ -132,7 +134,11 @@ export default class NoteDecayPlugin extends Plugin {
 		// reads a half-built link graph.
 		this.registerEvent(this.app.metadataCache.on("resolved", () => this.scheduleRescore()));
 		this.registerEvent(this.app.vault.on("modify", () => this.scheduleRescore()));
-		this.registerEvent(this.app.workspace.on("layout-change", () => this.explorer?.schedule()));
+		// `onLayoutChange`, not `schedule`: the explorer may have been opened, closed, or moved
+		// to the other sidebar since we last looked, and the observer follows the container.
+		this.registerEvent(
+			this.app.workspace.on("layout-change", () => this.explorer?.onLayoutChange())
+		);
 
 		this.registerInterval(window.setInterval(() => this.scheduleReload(), PERIODIC_RELOAD_MS));
 
@@ -185,6 +191,30 @@ export default class NoteDecayPlugin extends Plugin {
 		this.settings.excludeFolders = coerceStringArray(this.settings.excludeFolders);
 		this.settings.snoozedUntil = coerceNumberMap(this.settings.snoozedUntil);
 		this.settings.isPro = this.settings.isPro === true;
+
+		// EVERY string the code later calls a string method on. `data.json` is a file on the
+		// user's disk: a bad merge, a sync conflict, a hand-edit, or another tool's writer can
+		// leave a number or an object where a string belongs — and `licenseKey.trim()` in
+		// refreshLicense() runs inside onload(), so a non-string there does not degrade the
+		// plugin, it PREVENTS IT FROM LOADING, with no way to fix it from a settings tab that
+		// never renders. Coercion is the difference between a wrong value and a dead plugin.
+		this.settings.licenseKey = coerceString(this.settings.licenseKey);
+		this.settings.licenseEmail = coerceString(this.settings.licenseEmail);
+		this.settings.licenseStatus = coerceString(this.settings.licenseStatus) || "free";
+		this.settings.frontmatterKey =
+			coerceString(this.settings.frontmatterKey) || DEFAULT_SETTINGS.frontmatterKey;
+		this.settings.defaultProfile =
+			coerceString(this.settings.defaultProfile) || DEFAULT_SETTINGS.defaultProfile;
+		this.settings.enginePath = coerceString(this.settings.enginePath);
+		this.settings.signalsWriterId = coerceString(this.settings.signalsWriterId);
+
+		// And the numbers that are arithmetic operands. `Date.now() + "x" * DAY_MS` is NaN, and
+		// a NaN `snoozedUntil` is a snooze that silently never happens.
+		this.settings.snoozeDays = coerceNumber(this.settings.snoozeDays, DEFAULT_SETTINGS.snoozeDays);
+		this.settings.queueMinScore = coerceNumber(
+			this.settings.queueMinScore,
+			DEFAULT_SETTINGS.queueMinScore
+		);
 
 		// The shard id is generated once and then never changes — it names this plugin's own
 		// append-only file. Regenerating it would orphan the history in the old shard.
@@ -289,6 +319,23 @@ export default class NoteDecayPlugin extends Plugin {
 		this.renderQueueViews();
 		this.renderStatusBar();
 		this.explorer?.paint();
+	}
+
+	/**
+	 * The file explorer's container, or null when no explorer is mounted right now.
+	 *
+	 * "file-explorer" is Obsidian's internal leaf type for the built-in explorer. It is not
+	 * public API — but neither is `.nav-file-title[data-path]`, which is the only way to
+	 * decorate a row at all, and resolving the leaf is what keeps the MutationObserver off
+	 * `document.body` (where it would fire on every keystroke the user types into a note).
+	 * If Obsidian renames the type, `getLeavesOfType` returns [] and the dimming does nothing.
+	 */
+	private explorerContainer(): HTMLElement | null {
+		const container = this.app.workspace.getLeavesOfType("file-explorer")[0]?.view.containerEl;
+		if (!container) return null;
+		// The scrolling list, when it exists — the leaf container also holds the pane header,
+		// whose buttons re-render on hover.
+		return container.querySelector<HTMLElement>(".nav-files-container") ?? container;
 	}
 
 	private renderStatusBar(): void {
@@ -470,6 +517,16 @@ function basename(path: string): string {
 	const slash = path.lastIndexOf("/");
 	const name = slash === -1 ? path : path.slice(slash + 1);
 	return name.endsWith(".md") ? name.slice(0, -3) : name;
+}
+
+/** A string, or "". Never `String(value)` — that turns a stray object into "[object Object]". */
+function coerceString(value: unknown): string {
+	return typeof value === "string" ? value : "";
+}
+
+/** A finite number, or the default. NaN and Infinity are not numbers you can snooze until. */
+function coerceNumber(value: unknown, fallback: number): number {
+	return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
 function coerceStringArray(value: unknown): string[] {
