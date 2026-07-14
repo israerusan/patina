@@ -1,0 +1,283 @@
+/* Note Decay
+ *
+ * Every colour is derived from an Obsidian theme variable, never hard-coded, so the bands
+ * stay legible in any theme — light, dark, or a high-contrast community one.
+ *
+ * ALL styling lives here. The plugin never assigns `el.style.x` (the
+ * `no-static-styles-assignment` rule rejects it) and never injects a <style> element
+ * (`no-forbidden-elements` rejects that). The plugin's only job is to set a `data-decay`
+ * attribute; this file decides what that looks like — which also means a theme, or the
+ * user's own snippet, can override any of it. */
+
+:root {
+	/* The file-explorer dimming, per band. A stale note should be quieter than a fresh one,
+	 * not invisible: 0.55 is still comfortably readable, which is the point — the user has to
+	 * be able to click the note the plugin is nagging them about. */
+	--nd-dim-aging: 0.85;
+	--nd-dim-stale: 0.65;
+	--nd-dim-decayed: 0.5;
+}
+
+/* --- file explorer -------------------------------------------------------- */
+
+.nav-file-title[data-decay="aging"] {
+	opacity: var(--nd-dim-aging);
+}
+
+.nav-file-title[data-decay="stale"] {
+	opacity: var(--nd-dim-stale);
+}
+
+.nav-file-title[data-decay="decayed"] {
+	opacity: var(--nd-dim-decayed);
+	text-decoration-line: underline;
+	text-decoration-style: dotted;
+	text-decoration-color: var(--text-faint);
+	text-underline-offset: 3px;
+}
+
+/* --- status bar ----------------------------------------------------------- */
+
+.note-decay-status {
+	cursor: var(--cursor-link);
+}
+
+.note-decay-status[data-decay="stale"] {
+	color: var(--text-warning);
+}
+
+.note-decay-status[data-decay="decayed"] {
+	color: var(--text-error);
+}
+
+/* --- review queue --------------------------------------------------------- */
+
+.note-decay-queue {
+	padding: var(--size-4-2);
+}
+
+.note-decay-queue-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--size-4-2);
+	padding-bottom: var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.note-decay-sort {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.note-decay-topic-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	font-size: var(--font-ui-smaller);
+}
+
+.note-decay-topic-btn.is-locked {
+	color: var(--text-muted);
+}
+
+.note-decay-empty {
+	padding: var(--size-4-4) var(--size-4-2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.note-decay-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.note-decay-row {
+	padding: var(--size-4-2) 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.note-decay-row-main {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--size-4-2);
+}
+
+.note-decay-row-title {
+	color: var(--text-normal);
+	text-decoration: none;
+	font-weight: var(--font-medium);
+}
+
+.note-decay-row-title:hover {
+	color: var(--text-accent);
+}
+
+.note-decay-row-meta {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.note-decay-score {
+	font-variant-numeric: tabular-nums;
+	font-weight: var(--font-bold);
+}
+
+.note-decay-row[data-decay="stale"] .note-decay-score {
+	color: var(--text-warning);
+}
+
+.note-decay-row[data-decay="decayed"] .note-decay-score {
+	color: var(--text-error);
+}
+
+.note-decay-band,
+.note-decay-effort {
+	color: var(--text-faint);
+}
+
+.note-decay-reasons {
+	padding-top: var(--size-4-1);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.note-decay-row-actions {
+	display: flex;
+	gap: var(--size-4-1);
+	padding-top: var(--size-4-1);
+}
+
+.note-decay-row-actions button {
+	font-size: var(--font-ui-smaller);
+	padding: var(--size-2-1) var(--size-4-1);
+}
+
+/* --- suggester ------------------------------------------------------------ */
+
+.note-decay-suggest-name {
+	font-weight: var(--font-medium);
+}
+
+.note-decay-suggest-desc {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+/* --- license and Pro ------------------------------------------------------ */
+
+.note-decay-license-input {
+	width: 100%;
+	font-family: var(--font-monospace);
+	resize: vertical;
+}
+
+.note-decay-license-status {
+	padding: var(--size-4-2) 0;
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.note-decay-license-status.is-pro {
+	color: var(--text-success);
+}
+
+.note-decay-license-error {
+	color: var(--text-error);
+}
+
+.note-decay-pro-pill {
+	margin-left: var(--size-4-1);
+	padding: 0 var(--size-4-1);
+	border-radius: var(--radius-s);
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-bold);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.note-decay-setting-locked {
+	opacity: 0.75;
+}
+
+.note-decay-pro-card {
+	margin-top: var(--size-4-2);
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background-color: var(--background-secondary);
+}
+
+.note-decay-pro-card-title {
+	margin-bottom: var(--size-4-1);
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.note-decay-pro-card p {
+	margin: 0 0 var(--size-4-2) 0;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.note-decay-pro-card ul {
+	margin: 0 0 var(--size-4-3) 0;
+	padding-left: var(--size-4-4);
+	font-size: var(--font-ui-small);
+}
+
+.note-decay-pro-btn,
+.note-decay-upgrade-inline {
+	color: var(--text-accent);
+	font-weight: var(--font-medium);
+}
+
+.note-decay-pro-btn {
+	display: inline-block;
+	padding: var(--size-4-1) var(--size-4-3);
+	border-radius: var(--radius-s);
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	text-decoration: none;
+}
+
+.note-decay-pro-btn:hover {
+	background-color: var(--interactive-accent-hover);
+	color: var(--text-on-accent);
+}
+
+/* --- upsell modal --------------------------------------------------------- */
+
+.note-decay-upsell-lead {
+	padding-bottom: var(--size-4-2);
+}
+
+.note-decay-upsell-sub {
+	padding-bottom: var(--size-4-3);
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.note-decay-upsell-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+/* --- semantic engine ------------------------------------------------------ */
+
+.note-decay-engine p {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
