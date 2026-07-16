@@ -58,9 +58,9 @@ class SemanticBlockModal extends Modal {
 		const { contentEl } = this;
 		this.titleEl.setText(this.feature);
 
-		contentEl.addClass("note-decay-block");
+		contentEl.addClass("patina-block");
 		contentEl.createEl("p", {
-			cls: "note-decay-block-copy",
+			cls: "patina-block-copy",
 			text: blockCopy(this.block, this.feature),
 		});
 

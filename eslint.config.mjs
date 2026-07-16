@@ -41,7 +41,7 @@ export default tseslint.config(
 		},
 		rules: {
 			// `ui/sentence-case` with enforceCamelCaseLower fires on our product names
-			// ("Note Decay", "Second Read", "Pro") — lowercasing them would be wrong, and
+			// ("Patina", "Second Read", "Pro") — lowercasing them would be wrong, and
 			// the actual review does not flag these strings.
 			"obsidianmd/ui/sentence-case": "off",
 			// Advises the declarative settings API added in Obsidian 1.13.0; this targets

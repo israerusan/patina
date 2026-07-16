@@ -1,5 +1,5 @@
 // The shared activity log, folded (DESIGN 5.4 / 8.1). This is VENDORED code — it is
-// authored and unit-tested in obsidian-plugin-core — but Note Decay's whole `lastOpen`
+// authored and unit-tested in obsidian-plugin-core — but Patina's whole `lastOpen`
 // signal is this fold, and a drift in the vendored copy would silently change every score
 // in the vault. So it is exercised here too, against the copy that actually ships.
 import assert from "node:assert";

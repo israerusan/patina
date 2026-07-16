@@ -1,5 +1,5 @@
 /**
- * Note Decay's tier table (DESIGN 4.4). The ENGINE that reads it lives in the vendored
+ * Patina's tier table (DESIGN 4.4). The ENGINE that reads it lives in the vendored
  * shared core (`src/shared/featureGates.mjs`); the TABLE is per-plugin and lives here.
  *
  * `engine: true` means the feature needs the local semantic engine — which means desktop,

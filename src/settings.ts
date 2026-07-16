@@ -13,7 +13,7 @@ import type { QueueSort } from "./core/queue.d.mts";
  * "the settings type" must not drag the whole settings tab, and every `obsidian` symbol it
  * touches, into the pure code that only wants to read a threshold.
  */
-export interface NoteDecaySettings {
+export interface PatinaSettings {
 	licenseKey: string;
 	/** Cached entitlement. Derived from licenseKey, persisted so startup is instant. */
 	isPro: boolean;
@@ -51,7 +51,7 @@ export interface NoteDecaySettings {
 	schemaVersion: number;
 }
 
-export const DEFAULT_SETTINGS: NoteDecaySettings = {
+export const DEFAULT_SETTINGS: PatinaSettings = {
 	licenseKey: "",
 	isPro: false,
 	licenseEmail: "",

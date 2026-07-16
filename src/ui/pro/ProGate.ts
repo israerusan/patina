@@ -12,7 +12,7 @@ export interface ProHost {
  * The one place Pro features are gated at the point of use. Runs `action` when Pro is
  * active, otherwise opens an actionable upsell for `feature`.
  *
- * Note that the two Pro features Note Decay ships (`topicGroups`, `superseded`) are
+ * Note that the two Pro features Patina ships (`topicGroups`, `superseded`) are
  * ALSO engine features, and their COMMANDS are hidden from the palette entirely via
  * checkCallback rather than routed through here — a command that always opens a sales
  * modal is a command that should not have been in the palette. This gate exists for the

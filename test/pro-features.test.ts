@@ -12,7 +12,7 @@
 //   4. NOTHING is downloaded until the user clicks "Download and run" in that consent modal.
 //   5. Losing Pro drops the Pro view.
 import assert from "node:assert";
-import NoteDecayPlugin from "../src/main";
+import PatinaPlugin from "../src/main";
 import { DecayQueueView } from "../src/ui/DecayQueueView";
 import { chunkNote } from "../src/shared/engine/chunk.mjs";
 import { FakeEl, Setting, TFile, notices, openedModals } from "./obsidian-stub";
@@ -149,8 +149,8 @@ function owner(text: string): string {
 
 /* --------------------------------------------------------------- the plugin -- */
 
-async function makePlugin(isPro: boolean, engine: FakeEngine | null): Promise<NoteDecayPlugin> {
-	const plugin = new NoteDecayPlugin(app as never, { id: "note-decay", version: "1.0.0" } as never);
+async function makePlugin(isPro: boolean, engine: FakeEngine | null): Promise<PatinaPlugin> {
+	const plugin = new PatinaPlugin(app as never, { id: "patina", version: "1.0.0" } as never);
 	(plugin as unknown as { data: unknown }).data = { isPro, queueMinScore: 0 };
 	await plugin.loadSettings();
 	// isPro is recomputed from the signed key on load — a data.json that just SAYS isPro:true is
@@ -194,7 +194,7 @@ async function main(): Promise<void> {
 
 		// NO NOTE IS LOST. Grouping a worklist that silently drops half of it is not a feature.
 		const rowTitles = el
-			.findAll((node) => node.classes.has("note-decay-row-title"))
+			.findAll((node) => node.classes.has("patina-row-title"))
 			.map((node) => node.textContent)
 			.sort();
 		assert.deepEqual(rowTitles, ["crdt", "lunch", "storage", "taxes"]);

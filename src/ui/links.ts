@@ -55,8 +55,8 @@ export function renderPurchaseCta(
 	if (PURCHASE_AVAILABLE) {
 		return createExternalLink(parent, { text: options.label, url: PURCHASE_URL, cls: options.cls }) !== null;
 	}
-	const pending = parent.createDiv({ cls: options.pendingCls ?? "note-decay-pro-pending" });
-	pending.createSpan({ cls: "note-decay-pro-pending-label", text: PURCHASE_PENDING_LABEL });
-	pending.createSpan({ cls: "note-decay-pro-pending-copy", text: PURCHASE_PENDING_COPY });
+	const pending = parent.createDiv({ cls: options.pendingCls ?? "patina-pro-pending" });
+	pending.createSpan({ cls: "patina-pro-pending-label", text: PURCHASE_PENDING_LABEL });
+	pending.createSpan({ cls: "patina-pro-pending-copy", text: PURCHASE_PENDING_COPY });
 	return false;
 }

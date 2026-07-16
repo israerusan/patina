@@ -40,7 +40,7 @@ for (const anything of [true, false, undefined, null, 0]) {
 // order is a UI contract, not an implementation detail.
 assert.deepEqual(proFeatureKeys(FEATURES), ["topicGroups", "superseded"]);
 
-// Note Decay has no metered features: nothing is capped for free users, so every free
+// Patina has no metered features: nothing is capped for free users, so every free
 // limit is unlimited and `withinFreeLimit` is always true. This is asserted rather than
 // assumed, because a cap that appeared by accident would be a silent product change.
 for (const key of Object.keys(FEATURES)) {

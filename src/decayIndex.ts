@@ -4,7 +4,7 @@ import { isExcluded } from "./core/queue.mjs";
 import type { DecayOptions, DecayScore } from "./core/decay.d.mts";
 import type { QueueRow } from "./core/queue.d.mts";
 import type { SignalsIndex } from "./shared/signals/signalsAggregate.mjs";
-import type { NoteDecaySettings } from "./settings";
+import type { PatinaSettings } from "./settings";
 
 /**
  * Everything that turns a vault into a list of scored notes, in one place.
@@ -51,7 +51,7 @@ export class DecayIndex {
 		} catch (error) {
 			// A corrupt or unreadable log costs us `lastOpen`, not the plugin: the score
 			// renormalizes over the signals that remain and the queue still works.
-			console.error("note-decay: could not read the activity log", error);
+			console.error("patina: could not read the activity log", error);
 			this.signals = {};
 		}
 	}
@@ -71,7 +71,7 @@ export class DecayIndex {
 	 * is still a link, and pretending the Archive folder does not exist would make every note
 	 * it points at look more abandoned than it is.
 	 */
-	rebuild(settings: NoteDecaySettings, now: number = Date.now()): void {
+	rebuild(settings: PatinaSettings, now: number = Date.now()): void {
 		const files: TFile[] = this.app.vault.getMarkdownFiles();
 
 		const mtimeByPath: Record<string, number> = {};
@@ -122,7 +122,7 @@ export class DecayIndex {
 	}
 
 	/** The settings, in the shape the pure scorer wants. */
-	private decayOptions(settings: NoteDecaySettings): DecayOptions {
+	private decayOptions(settings: PatinaSettings): DecayOptions {
 		return {
 			halfLives: settings.halfLives,
 			weights: settings.weights,

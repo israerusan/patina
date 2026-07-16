@@ -1,9 +1,9 @@
 [
   {
-    "id": "note-decay",
-    "name": "Note Decay",
+    "id": "patina",
+    "name": "Patina",
     "author": "Israel Avila",
     "description": "Score every note's staleness from edits, opens, and inbound links, then work through a decay-ranked review queue.",
-    "repo": "israerusan/note-decay"
+    "repo": "israerusan/patina"
   }
 ]

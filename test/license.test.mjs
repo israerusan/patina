@@ -51,7 +51,7 @@ assert.equal(result.email, "buyer@example.com");
 // --- a key for ANOTHER Second Read plugin's manifest id must NOT verify ------
 // Plugin identity and license identity are deliberately different namespaces. This is the
 // assertion that makes "one key, five plugins" a property of the code rather than a hope.
-for (const id of ["note-decay", "standing-questions", "effort-index", "prior-art", "unwritten"]) {
+for (const id of ["patina", "standing-questions", "effort-index", "prior-art", "unwritten"]) {
 	const perPlugin = mint({ product: id, email: "x@y.z", issued: "2026-07-14" });
 	assert.ok(
 		!verifyLicense(perPlugin, SUITE_PRODUCT_ID, pub).valid,

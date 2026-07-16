@@ -12,7 +12,7 @@
 // A wrong setting is a bug. A setting that prevents the plugin from loading is a support
 // ticket, and it is the one failure mode a settings loader exists to prevent.
 import assert from "node:assert";
-import NoteDecayPlugin from "../src/main";
+import PatinaPlugin from "../src/main";
 import { DEFAULT_SETTINGS } from "../src/settings";
 
 // The debounced save/rescore reach for `window`. Node has none.
@@ -29,8 +29,8 @@ const app = {
 	workspace: { getActiveViewOfType: () => null, getLeavesOfType: () => [], on: () => ({}) },
 };
 
-function makePlugin(data: unknown): NoteDecayPlugin {
-	const plugin = new NoteDecayPlugin(app as never, { id: "note-decay", version: "1.0.0" } as never);
+function makePlugin(data: unknown): PatinaPlugin {
+	const plugin = new PatinaPlugin(app as never, { id: "patina", version: "1.0.0" } as never);
 	(plugin as unknown as { data: unknown }).data = data;
 	return plugin;
 }

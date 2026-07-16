@@ -28,8 +28,8 @@ export class ProfileSuggestModal extends SuggestModal<ProfileLabel> {
 	}
 
 	renderSuggestion(profile: ProfileLabel, el: HTMLElement): void {
-		el.createDiv({ cls: "note-decay-suggest-name", text: profile.name });
-		el.createDiv({ cls: "note-decay-suggest-desc", text: profile.desc });
+		el.createDiv({ cls: "patina-suggest-name", text: profile.name });
+		el.createDiv({ cls: "patina-suggest-desc", text: profile.desc });
 	}
 
 	onChooseSuggestion(profile: ProfileLabel): void {

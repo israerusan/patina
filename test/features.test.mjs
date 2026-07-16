@@ -5,7 +5,7 @@ import assert from "node:assert";
 import { FEATURES } from "../src/core/features.mjs";
 import { isFeatureEnabled, needsEngine, proFeatureKeys } from "../src/shared/featureGates.mjs";
 
-// Free: the whole heuristic add-on. This is not a crippled demo — everything Note Decay
+// Free: the whole heuristic add-on. This is not a crippled demo — everything Patina
 // does without the semantic engine works for nothing, forever, including on mobile.
 const FREE = [
 	"score",

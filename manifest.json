@@ -1,6 +1,6 @@
 {
-  "id": "note-decay",
-  "name": "Note Decay",
+  "id": "patina",
+  "name": "Patina",
   "version": "1.0.0",
   "minAppVersion": "1.5.0",
   "description": "Score every note's staleness from edits, opens, and inbound links, then work through a decay-ranked review queue.",

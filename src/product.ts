@@ -6,13 +6,13 @@ import { SUITE_PRODUCT_ID } from "./shared/suiteLicense.mjs";
  * The two are deliberately different namespaces. `PRODUCT_ID` is the manifest id — what
  * Obsidian calls this add-on. `LICENSE_PRODUCT_ID` is what a key is signed for, and it is
  * the same string in all five Second Read add-ons, so one purchase unlocks all of them.
- * A key minted for "note-decay" is NOT a Second Read key and must never verify; that is
+ * A key minted for "patina" is NOT a Second Read key and must never verify; that is
  * asserted in test/license.test.mjs.
  */
 
 /** This plugin's manifest id. NOT the license product id. */
-export const PRODUCT_ID = "note-decay";
-export const PRODUCT_NAME = "Note Decay";
+export const PRODUCT_ID = "patina";
+export const PRODUCT_NAME = "Patina";
 
 /** What a license key is signed for. Shared by all five Second Read add-ons. */
 export const LICENSE_PRODUCT_ID = SUITE_PRODUCT_ID; // "second-read"
@@ -55,7 +55,7 @@ export const PURCHASE_PENDING_COPY =
 	"paste it above.";
 
 export const PRO_TAGLINE =
-	"One key unlocks Pro in all five Second Read add-ons: Note Decay, Standing Questions, Effort Index, Prior Art, and Unwritten. $29 one-time, no subscription, no account.";
+	"One key unlocks Pro in all five Second Read add-ons: Patina, Standing Questions, Effort Index, Prior Art, and Unwritten. $29 one-time, no subscription, no account.";
 
 /** What a free user of THIS add-on is missing, in one phrase. */
 export const PRO_UNLOCK_SUMMARY = "topic-grouped review sessions and superseded-note detection";

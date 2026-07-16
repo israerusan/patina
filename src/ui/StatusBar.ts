@@ -11,7 +11,7 @@ import type { DecayScore } from "../core/decay.d.mts";
  */
 export class StatusBar {
 	constructor(private el: HTMLElement) {
-		this.el.addClass("note-decay-status");
+		this.el.addClass("patina-status");
 	}
 
 	get element(): HTMLElement {

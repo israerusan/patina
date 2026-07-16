@@ -35,15 +35,15 @@ export class ProUpsellModal extends Modal {
 		this.titleEl.setText(`${PRO_NAME} — ${PRO_PRICE_LABEL}`);
 
 		contentEl.createDiv({
-			cls: "note-decay-upsell-lead",
+			cls: "patina-upsell-lead",
 			text: PRO_UPSELL[this.feature] ?? PRO_TAGLINE,
 		});
-		contentEl.createDiv({ cls: "note-decay-upsell-sub", text: PRO_TAGLINE });
+		contentEl.createDiv({ cls: "patina-upsell-sub", text: PRO_TAGLINE });
 
-		const actions = contentEl.createDiv({ cls: "note-decay-upsell-actions" });
+		const actions = contentEl.createDiv({ cls: "patina-upsell-actions" });
 		renderPurchaseCta(actions, {
 			label: `Get Pro — ${PRO_PRICE_LABEL}`,
-			cls: "note-decay-pro-btn",
+			cls: "patina-pro-btn",
 		});
 
 		// Modal is not a Component, so there is no registerDomEvent here. onClose() empties

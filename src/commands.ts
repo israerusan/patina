@@ -1,5 +1,5 @@
 import { MarkdownView, Notice, TFile } from "obsidian";
-import type NoteDecayPlugin from "./main";
+import type PatinaPlugin from "./main";
 import { ProfileSuggestModal } from "./ui/ProfileSuggestModal";
 
 /**
@@ -8,7 +8,7 @@ import { ProfileSuggestModal } from "./ui/ProfileSuggestModal";
  * These used to live inline in onload(), which is how a plugin entry point turns into a
  * god-object. main.ts now says what the plugin IS; this says what it DOES.
  *
- * Sentence case, no plugin name in the name (the review rejects "Note Decay: open queue"),
+ * Sentence case, no plugin name in the name (the review rejects "Patina: open queue"),
  * no default hotkeys (the guidelines forbid them and the review checks).
  *
  * The two Pro commands use checkCallback and return FALSE when the user is not Pro or the
@@ -16,7 +16,7 @@ import { ProfileSuggestModal } from "./ui/ProfileSuggestModal";
  * always failing with a sales Notice. A command that can only ever show an ad is not a
  * command.
  */
-export function registerCommands(plugin: NoteDecayPlugin): void {
+export function registerCommands(plugin: PatinaPlugin): void {
 	plugin.addCommand({
 		id: "open-review-queue",
 		name: "Open review queue",
@@ -91,7 +91,7 @@ export function registerCommands(plugin: NoteDecayPlugin): void {
 	});
 }
 
-function activeMarkdown(plugin: NoteDecayPlugin): TFile | null {
+function activeMarkdown(plugin: PatinaPlugin): TFile | null {
 	const file = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.file;
 	return file instanceof TFile && file.extension === "md" ? file : null;
 }

@@ -14,7 +14,7 @@
 import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
-import { NoteDecaySettingTab } from "../src/ui/SettingsTab";
+import { PatinaSettingTab } from "../src/ui/SettingsTab";
 import { ProUpsellModal } from "../src/ui/pro/ProUpsellModal";
 import { renderPurchaseCta, safeHttpUrl } from "../src/ui/links";
 import { PURCHASE_AVAILABLE, PURCHASE_URL } from "../src/product";
@@ -53,7 +53,7 @@ function fakePlugin(isPro: boolean) {
 
 function renderSettings(isPro: boolean): FakeEl {
 	Setting.reset();
-	const tab = new NoteDecaySettingTab(fakePlugin(isPro) as never);
+	const tab = new PatinaSettingTab(fakePlugin(isPro) as never);
 	tab.display();
 	return tab.containerEl as unknown as FakeEl;
 }
@@ -108,7 +108,7 @@ assert.equal(PURCHASE_AVAILABLE, false, "…and everything else is derived from 
 // renderPurchaseCta is the only thing in the add-on that decides, and it decides from the URL.
 {
 	const parent = new FakeEl();
-	const rendered = renderPurchaseCta(parent as never, { label: "Unlock Pro", cls: "note-decay-pro-btn" });
+	const rendered = renderPurchaseCta(parent as never, { label: "Unlock Pro", cls: "patina-pro-btn" });
 	assert.equal(rendered, false, "no checkout, no button");
 
 	// What the same call does once a URL exists (the function's own contract, driven directly —

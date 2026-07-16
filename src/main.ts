@@ -12,7 +12,7 @@ import { SignalsBroker } from "./shared/signals/SignalsBroker";
 import { EngineBroker } from "./shared/engine/EngineBroker";
 import type { EngineHost, EngineStatus, InstallProgress } from "./shared/engine/EngineHost";
 import { LicenseManager } from "./license/LicenseManager";
-import { DEFAULT_SETTINGS, type NoteDecaySettings } from "./settings";
+import { DEFAULT_SETTINGS, type PatinaSettings } from "./settings";
 import { DecayIndex } from "./decayIndex";
 import { buildQueue, toCsv } from "./core/queue.mjs";
 import type { QueueRow, QueueSort } from "./core/queue.d.mts";
@@ -26,7 +26,7 @@ import {
 	type SemanticProgress,
 } from "./semantic";
 import { DecayQueueView, VIEW_TYPE_DECAY_QUEUE } from "./ui/DecayQueueView";
-import { NoteDecaySettingTab } from "./ui/SettingsTab";
+import { PatinaSettingTab } from "./ui/SettingsTab";
 import { StatusBar } from "./ui/StatusBar";
 import { ExplorerDecorator } from "./ui/ExplorerDecorator";
 import { SupersededModal } from "./ui/SupersededModal";
@@ -46,8 +46,8 @@ const PERIODIC_RELOAD_MS = 300_000;
 const DAY_MS = 86_400_000;
 const CSV_PATH = "Decay Scores.csv";
 
-export default class NoteDecayPlugin extends Plugin {
-	settings: NoteDecaySettings = { ...DEFAULT_SETTINGS };
+export default class PatinaPlugin extends Plugin {
+	settings: PatinaSettings = { ...DEFAULT_SETTINGS };
 	/** The last verification failure, for the License section. Not persisted. */
 	licenseError: string | undefined;
 
@@ -111,7 +111,7 @@ export default class NoteDecayPlugin extends Plugin {
 		this.explorer.setEnabled(this.settings.dimInExplorer);
 
 		registerCommands(this);
-		this.addSettingTab(new NoteDecaySettingTab(this));
+		this.addSettingTab(new PatinaSettingTab(this));
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
@@ -312,7 +312,7 @@ export default class NoteDecayPlugin extends Plugin {
 	}
 
 	/**
-	 * Pro flipped. Note Decay has no Pro-only SETTING to disable — its two Pro features are
+	 * Pro flipped. Patina has no Pro-only SETTING to disable — its two Pro features are
 	 * actions, gated at the point of use — so all this has to do is drop the Pro-only STATE and
 	 * repaint. If a Pro-only persisted toggle is ever added, turn it off here.
 	 *
@@ -513,7 +513,7 @@ export default class NoteDecayPlugin extends Plugin {
 		try {
 			await this.engine.ensureStarted();
 		} catch (error) {
-			console.error("note-decay: engine probe failed", error);
+			console.error("patina: engine probe failed", error);
 		}
 		const status = await this.refreshEngineStatus();
 		return status ?? (await this.engine.status());

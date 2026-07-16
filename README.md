@@ -1,10 +1,10 @@
-# Note Decay
+# Patina
 
 Find the notes that are quietly rotting.
 
-Every vault accumulates notes that were true when you wrote them and are not true now. Nothing tells you which ones. Note Decay scores every note's staleness from four signals, ranks them, and gives you a worklist.
+Every vault accumulates notes that were true when you wrote them and are not true now. Nothing tells you which ones. Patina scores every note's staleness from four signals, ranks them, and gives you a worklist.
 
-> Note Decay never edits your notes. The only thing it ever writes is a `decay:` line in a note's frontmatter — and only when you explicitly run "Set decay profile for this note".
+> Patina never edits your notes. The only thing it ever writes is a `decay:` line in a note's frontmatter — and only when you explicitly run "Set decay profile for this note".
 
 ## How the score works
 
@@ -13,7 +13,7 @@ A note decays on a **half-life**. One half-life of neglect halves how fresh a si
 | Signal | Weight | Where it comes from |
 | --- | :---: | --- |
 | **Last edited** | 0.5 | The file's modification time. |
-| **Last opened** | 0.3 | Obsidian does not record this. **Note Decay does** — see the activity log below. |
+| **Last opened** | 0.3 | Obsidian does not record this. **Patina does** — see the activity log below. |
 | **Inbound-link recency** | 0.2 | The newest note that still links here. |
 
 The score is `0`–`100`, higher is more decayed, and it lands in a band: **fresh** (< 30), **aging** (30–59), **stale** (60–84), **decayed** (≥ 85).
@@ -53,7 +53,7 @@ Half-lives, weights, band thresholds, the frontmatter key, and the excluded fold
 
 ### Pro — $29 one-time, unlocks all five Second Read add-ons
 
-> **Pro is not on sale yet.** There is no checkout, and the add-on does not pretend there is: the Pro card in settings says "purchasing opens soon" instead of showing a buy button. The suite launches with all five add-ons and a checkout that emails your key automatically. If you already have a key, paste it into Settings → Note Decay → License.
+> **Pro is not on sale yet.** There is no checkout, and the add-on does not pretend there is: the Pro card in settings says "purchasing opens soon" instead of showing a buy button. The suite launches with all five add-ons and a checkout that emails your key automatically. If you already have a key, paste it into Settings → Patina → License.
 
 Pro adds the two features that need to compare notes **by meaning** rather than by metadata:
 
@@ -62,7 +62,7 @@ Pro adds the two features that need to compare notes **by meaning** rather than 
 
 Both need the local semantic engine (see below), which runs on your computer and sends nothing anywhere. **The engine has no published build as of this release**, so both features are switched off and say so when you reach for them. They do not show you an empty list — an empty list would look like a clean vault, and that would be a lie.
 
-One key unlocks Pro in all five Second Read add-ons: Note Decay, Standing Questions, Effort Index, Prior Art, and Unwritten. Licenses are verified **offline** with an Ed25519 signature built into the add-on. No account, no server, no network request.
+One key unlocks Pro in all five Second Read add-ons: Patina, Standing Questions, Effort Index, Prior Art, and Unwritten. Licenses are verified **offline** with an Ed25519 signature built into the add-on. No account, no server, no network request.
 
 ## Disclosures
 
@@ -70,7 +70,7 @@ Please read these before installing. They are the things this add-on does that y
 
 ### It records which notes you open, on your device
 
-Obsidian does not track when a note was last opened, so **Note Decay logs it itself**. Without that, "last opened" is not a signal anyone could compute.
+Obsidian does not track when a note was last opened, so **Patina logs it itself**. Without that, "last opened" is not a signal anyone could compute.
 
 > This add-on records, on your device only, which notes you open. The log lives in `<vault>/.obsidian/second-read/signals/` and never leaves your machine. Delete the folder to erase it; there is a **Clear activity log** button in settings.
 
@@ -110,7 +110,7 @@ No default hotkeys — bind your own in Settings → Hotkeys.
 
 ## Install
 
-Not yet in the community directory. To install manually, copy `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/note-decay/` and enable it in Settings → Community plugins.
+Not yet in the community directory. To install manually, copy `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/patina/` and enable it in Settings → Community plugins.
 
 ## Development
 

@@ -7,7 +7,7 @@
 import assert from "node:assert";
 import { DecayIndex } from "../src/decayIndex";
 import { buildQueue } from "../src/core/queue.mjs";
-import { DEFAULT_SETTINGS, type NoteDecaySettings } from "../src/settings";
+import { DEFAULT_SETTINGS, type PatinaSettings } from "../src/settings";
 import type { SignalsIndex } from "../src/shared/signals/signalsAggregate.mjs";
 
 const DAY = 86_400_000;
@@ -41,7 +41,7 @@ function fakeApp(files: FakeFile[], resolvedLinks: Record<string, Record<string,
 	};
 }
 
-const settings: NoteDecaySettings = { ...DEFAULT_SETTINGS, excludeFolders: ["Archive"] };
+const settings: PatinaSettings = { ...DEFAULT_SETTINGS, excludeFolders: ["Archive"] };
 
 const files = [
 	file("fresh.md", 1),

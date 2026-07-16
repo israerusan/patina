@@ -33,23 +33,23 @@ export class SupersededModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.addClass("note-decay-superseded");
+		contentEl.addClass("patina-superseded");
 		this.titleEl.setText("Superseded notes");
 
 		if (this.notes.length === 0) {
-			contentEl.createEl("p", { cls: "note-decay-empty", text: EMPTY_SUPERSEDED });
+			contentEl.createEl("p", { cls: "patina-empty", text: EMPTY_SUPERSEDED });
 			return;
 		}
 
 		contentEl.createEl("p", {
-			cls: "note-decay-superseded-lead",
+			cls: "patina-superseded-lead",
 			text:
 				`${this.notes.length} of the top ${Math.min(this.scanned, MAX_SESSION_NOTES)} notes in the ` +
 				"review queue look like they have been replaced by newer ones. This is a similarity " +
 				"score, not a verdict — open one before you act on it.",
 		});
 
-		const list = contentEl.createDiv({ cls: "note-decay-superseded-list" });
+		const list = contentEl.createDiv({ cls: "patina-superseded-list" });
 		for (const note of this.notes) this.renderRow(list, note);
 	}
 
@@ -58,28 +58,28 @@ export class SupersededModal extends Modal {
 	}
 
 	private renderRow(list: HTMLElement, note: SupersededNote): void {
-		const row = list.createDiv({ cls: "note-decay-superseded-row" });
+		const row = list.createDiv({ cls: "patina-superseded-row" });
 
-		const head = row.createDiv({ cls: "note-decay-row-main" });
-		const title = head.createEl("a", { cls: "note-decay-row-title", text: note.title });
+		const head = row.createDiv({ cls: "patina-row-main" });
+		const title = head.createEl("a", { cls: "patina-row-title", text: note.title });
 		title.setAttr("href", "#");
 		title.addEventListener("click", (event: MouseEvent) => {
 			event.preventDefault();
 			this.close();
 			void this.host.openNote(note.path, event);
 		});
-		head.createDiv({ cls: "note-decay-row-meta" }).createSpan({
-			cls: "note-decay-score",
+		head.createDiv({ cls: "patina-row-meta" }).createSpan({
+			cls: "patina-score",
 			text: String(note.score),
 		});
 
-		row.createDiv({ cls: "note-decay-reasons", text: supersededReason(note) });
+		row.createDiv({ cls: "patina-reasons", text: supersededReason(note) });
 
 		// The superseding notes, by name and clickable — the claim is only checkable if the user
 		// can read the notes it is about.
-		const by = row.createDiv({ cls: "note-decay-superseded-by" });
+		const by = row.createDiv({ cls: "patina-superseded-by" });
 		for (const source of note.by) {
-			const link = by.createEl("a", { cls: "note-decay-superseded-link", text: source.title });
+			const link = by.createEl("a", { cls: "patina-superseded-link", text: source.title });
 			link.setAttr("href", "#");
 			link.addEventListener("click", (event: MouseEvent) => {
 				event.preventDefault();
@@ -88,7 +88,7 @@ export class SupersededModal extends Modal {
 			});
 		}
 
-		const actions = row.createDiv({ cls: "note-decay-row-actions" });
+		const actions = row.createDiv({ cls: "patina-row-actions" });
 		const open = actions.createEl("button", { text: "Open" });
 		open.addEventListener("click", () => {
 			this.close();

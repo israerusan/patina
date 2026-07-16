@@ -1,5 +1,5 @@
 import { PluginSettingTab, Setting, Notice } from "obsidian";
-import type NoteDecayPlugin from "../main";
+import type PatinaPlugin from "../main";
 import { PROFILE_LABELS } from "../settings";
 import { renderPurchaseCta } from "./links";
 import { EngineInstallModal } from "../shared/engine/EngineInstallModal";
@@ -17,8 +17,8 @@ import { engineInstallDir } from "../core/engineCopy.mjs";
 import { ENGINE_RELEASE_PINNED, ENGINE_VERSION } from "../shared/engine/engineRelease.mjs";
 import type { EngineStatus } from "../shared/engine/EngineHost";
 
-export class NoteDecaySettingTab extends PluginSettingTab {
-	constructor(private plugin: NoteDecayPlugin) {
+export class PatinaSettingTab extends PluginSettingTab {
+	constructor(private plugin: PatinaPlugin) {
 		super(plugin.app, plugin);
 	}
 
@@ -42,7 +42,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 
 	/** The shared accent "Pro" pill — one affordance for gating, everywhere. */
 	private markPro(setting: Setting): void {
-		setting.nameEl.createSpan({ cls: "note-decay-pro-pill", text: "Pro" });
+		setting.nameEl.createSpan({ cls: "patina-pro-pill", text: "Pro" });
 	}
 
 	/**
@@ -56,13 +56,13 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 		setting.descEl.appendText(" ");
 		if (!PURCHASE_AVAILABLE) {
 			setting.descEl.createSpan({
-				cls: "note-decay-upgrade-inline",
+				cls: "patina-upgrade-inline",
 				text: `Included in ${PRO_NAME} — purchasing opens soon.`,
 			});
 			return;
 		}
 		renderPurchaseCta(setting.descEl, {
-			cls: "note-decay-upgrade-inline",
+			cls: "patina-upgrade-inline",
 			label: "Upgrade to Pro",
 		});
 	}
@@ -75,7 +75,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 		const setting = new Setting(this.containerEl).setName(name).setDesc(desc);
 		this.markPro(setting);
 		if (!this.plugin.settings.isPro) {
-			setting.settingEl.addClass("note-decay-setting-locked");
+			setting.settingEl.addClass("patina-setting-locked");
 			setting.addExtraButton((button) =>
 				button.setIcon("lock").setDisabled(true).setTooltip("Pro feature")
 			);
@@ -96,7 +96,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 				`Verified offline with an Ed25519 signature built into the add-on — no account, no server, no network request. One ${SUITE_NAME} key unlocks Pro in all five add-ons.`
 			)
 			.addTextArea((text) => {
-				text.inputEl.addClass("note-decay-license-input");
+				text.inputEl.addClass("patina-license-input");
 				text.inputEl.rows = 3;
 				text
 					.setPlaceholder("Paste your license key")
@@ -112,7 +112,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 					});
 			});
 
-		const status = this.containerEl.createDiv({ cls: "note-decay-license-status" });
+		const status = this.containerEl.createDiv({ cls: "patina-license-status" });
 		if (this.plugin.settings.isPro) {
 			status.addClass("is-pro");
 			const email = this.plugin.settings.licenseEmail;
@@ -123,7 +123,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 		}
 
 		if (this.plugin.licenseError) {
-			status.createEl("p", { cls: "note-decay-license-error", text: this.plugin.licenseError });
+			status.createEl("p", { cls: "patina-license-error", text: this.plugin.licenseError });
 		} else {
 			status.createEl("p", {
 				text: `Free tier. Pro unlocks ${PRO_UNLOCK_SUMMARY} — and the same key unlocks Pro in all five ${SUITE_NAME} add-ons.`,
@@ -146,8 +146,8 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 	 * product.ts, and it is the only thing in the add-on allowed to make that decision.
 	 */
 	private renderProCard(parent: HTMLElement): void {
-		const card = parent.createDiv({ cls: "note-decay-pro-card" });
-		card.createDiv({ cls: "note-decay-pro-card-title", text: `${PRO_NAME} — ${PRO_PRICE_LABEL}` });
+		const card = parent.createDiv({ cls: "patina-pro-card" });
+		card.createDiv({ cls: "patina-pro-card-title", text: `${PRO_NAME} — ${PRO_PRICE_LABEL}` });
 		card.createEl("p", { text: PRO_TAGLINE });
 
 		const list = card.createEl("ul");
@@ -155,7 +155,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 			list.createEl("li", { text: FEATURES[key].label });
 		}
 
-		renderPurchaseCta(card, { cls: "note-decay-pro-btn", label: "Unlock Pro" });
+		renderPurchaseCta(card, { cls: "patina-pro-btn", label: "Unlock Pro" });
 	}
 
 	// --- Scoring ----------------------------------------------------------------
@@ -370,7 +370,7 @@ export class NoteDecaySettingTab extends PluginSettingTab {
 		new Setting(this.containerEl).setName("Semantic engine").setHeading();
 
 		const host = this.plugin.engine;
-		const box = this.containerEl.createDiv({ cls: "note-decay-engine" });
+		const box = this.containerEl.createDiv({ cls: "patina-engine" });
 
 		if (!host || !host.desktop) {
 			box.createEl("p", {

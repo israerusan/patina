@@ -75,4 +75,4 @@ selling something it cannot deliver.
   says "purchasing opens soon". `manifest.fundingUrl` is removed for the same reason. One
   constant, `PURCHASE_URL` in `src/product.ts`, turns every CTA in the add-on back on.
 
-[1.0.0]: https://github.com/israerusan/note-decay/releases/tag/1.0.0
+[1.0.0]: https://github.com/israerusan/patina/releases/tag/1.0.0

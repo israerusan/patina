@@ -36,10 +36,10 @@ assert.match(
 );
 
 // --- Shape -------------------------------------------------------------------
-assert.equal(manifest.id, "note-decay");
+assert.equal(manifest.id, "patina");
 assert.ok(/^[a-z0-9-]+$/.test(manifest.id), "manifest.id must be lowercase letters/digits/hyphens");
 assert.equal(manifest.id, pkg.name, "manifest.id must equal the package name (portfolio invariant)");
-assert.equal(manifest.name, "Note Decay", "manifest.name is Title Case of the id");
+assert.equal(manifest.name, "Patina", "manifest.name is Title Case of the id");
 assert.ok(
 	manifest.minAppVersion && /^\d+\.\d+\.\d+$/.test(manifest.minAppVersion),
 	"manifest.minAppVersion must be set (x.y.z)"

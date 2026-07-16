@@ -1,5 +1,5 @@
 import { ItemView, type WorkspaceLeaf } from "obsidian";
-import type NoteDecayPlugin from "../main";
+import type PatinaPlugin from "../main";
 import { buildQueue, QUEUE_SORTS } from "../core/queue.mjs";
 import type { QueueRow, QueueSort } from "../core/queue.d.mts";
 import type { TopicGroup } from "../core/topics.d.mts";
@@ -7,7 +7,7 @@ import { EMPTY_TOPIC_GROUPS } from "../core/engineCopy.mjs";
 import { FEATURES } from "../core/features.mjs";
 import { requirePro } from "./pro/ProGate";
 
-export const VIEW_TYPE_DECAY_QUEUE = "note-decay-queue";
+export const VIEW_TYPE_DECAY_QUEUE = "patina-queue";
 
 const SORT_LABELS: Record<QueueSort, string> = {
 	score: "Decay score",
@@ -33,7 +33,7 @@ export class DecayQueueView extends ItemView {
 
 	constructor(
 		leaf: WorkspaceLeaf,
-		private plugin: NoteDecayPlugin
+		private plugin: PatinaPlugin
 	) {
 		super(leaf);
 	}
@@ -64,13 +64,13 @@ export class DecayQueueView extends ItemView {
 
 		const root = this.contentEl;
 		root.empty();
-		root.addClass("note-decay-queue");
+		root.addClass("patina-queue");
 
 		this.renderHeader(root);
 
 		if (this.rows.length === 0) {
 			root.createDiv({
-				cls: "note-decay-empty",
+				cls: "patina-empty",
 				text: "Nothing is decaying. Every note is inside its half-life, snoozed, or evergreen.",
 			});
 			return;
@@ -82,14 +82,14 @@ export class DecayQueueView extends ItemView {
 			return;
 		}
 
-		const list = root.createDiv({ cls: "note-decay-list" });
+		const list = root.createDiv({ cls: "patina-list" });
 		for (const row of this.rows) this.renderRow(list, row);
 	}
 
 	private renderHeader(root: HTMLElement): void {
-		const header = root.createDiv({ cls: "note-decay-queue-header" });
+		const header = root.createDiv({ cls: "patina-queue-header" });
 
-		const sortLabel = header.createEl("label", { cls: "note-decay-sort" });
+		const sortLabel = header.createEl("label", { cls: "patina-sort" });
 		sortLabel.createSpan({ text: "Sort by" });
 		const select = sortLabel.createEl("select");
 		for (const sort of QUEUE_SORTS) {
@@ -107,7 +107,7 @@ export class DecayQueueView extends ItemView {
 		// they cannot leave.
 		if (this.plugin.topics) {
 			const ungroup = header.createEl("button", {
-				cls: "note-decay-topic-btn",
+				cls: "patina-topic-btn",
 				text: "Ungroup",
 			});
 			this.registerDomEvent(ungroup, "click", () => {
@@ -121,10 +121,10 @@ export class DecayQueueView extends ItemView {
 		// COMMAND is hidden from the palette instead (see commands.ts), because a palette
 		// entry that can only ever fail is noise.
 		const topic = header.createEl("button", {
-			cls: "note-decay-topic-btn",
+			cls: "patina-topic-btn",
 			text: FEATURES.topicGroups.label,
 		});
-		topic.createSpan({ cls: "note-decay-pro-pill", text: "Pro" });
+		topic.createSpan({ cls: "patina-pro-pill", text: "Pro" });
 		if (!this.plugin.settings.isPro) topic.addClass("is-locked");
 		this.registerDomEvent(topic, "click", () => {
 			requirePro({ isPro: this.plugin.settings.isPro, app: this.app }, "topicGroups", () => {
@@ -151,20 +151,20 @@ export class DecayQueueView extends ItemView {
 	 */
 	private renderGrouped(root: HTMLElement, groups: TopicGroup[], ungrouped: QueueRow[]): void {
 		if (groups.length === 0) {
-			root.createDiv({ cls: "note-decay-empty", text: EMPTY_TOPIC_GROUPS });
+			root.createDiv({ cls: "patina-empty", text: EMPTY_TOPIC_GROUPS });
 		}
 
 		const seen = new Set<string>();
 		for (const group of groups) {
-			const section = root.createDiv({ cls: "note-decay-group" });
-			const head = section.createDiv({ cls: "note-decay-group-head" });
-			head.createSpan({ cls: "note-decay-group-label", text: group.label });
+			const section = root.createDiv({ cls: "patina-group" });
+			const head = section.createDiv({ cls: "patina-group-head" });
+			head.createSpan({ cls: "patina-group-label", text: group.label });
 			head.createSpan({
-				cls: "note-decay-group-count",
+				cls: "patina-group-count",
 				text: `${group.members.length} notes · ${Math.round(group.cohesion * 100)}% alike`,
 			});
 
-			const list = section.createDiv({ cls: "note-decay-list" });
+			const list = section.createDiv({ cls: "patina-list" });
 			for (const row of group.members) {
 				seen.add(row.path);
 				this.renderRow(list, row);
@@ -180,39 +180,39 @@ export class DecayQueueView extends ItemView {
 
 	private renderSection(root: HTMLElement, label: string, rows: QueueRow[]): void {
 		if (rows.length === 0) return;
-		const section = root.createDiv({ cls: "note-decay-group" });
-		section.createDiv({ cls: "note-decay-group-head" }).createSpan({
-			cls: "note-decay-group-label",
+		const section = root.createDiv({ cls: "patina-group" });
+		section.createDiv({ cls: "patina-group-head" }).createSpan({
+			cls: "patina-group-label",
 			text: label,
 		});
-		const list = section.createDiv({ cls: "note-decay-list" });
+		const list = section.createDiv({ cls: "patina-list" });
 		for (const row of rows) this.renderRow(list, row);
 	}
 
 	private renderRow(list: HTMLElement, row: QueueRow): void {
-		const item = list.createDiv({ cls: "note-decay-row" });
+		const item = list.createDiv({ cls: "patina-row" });
 		item.setAttr("data-decay", row.band);
 
-		const main = item.createDiv({ cls: "note-decay-row-main" });
-		const title = main.createEl("a", { cls: "note-decay-row-title", text: row.title });
+		const main = item.createDiv({ cls: "patina-row-main" });
+		const title = main.createEl("a", { cls: "patina-row-title", text: row.title });
 		title.setAttr("href", "#");
 		this.registerDomEvent(title, "click", (event: MouseEvent) => {
 			event.preventDefault();
 			void this.plugin.openNote(row.path, event);
 		});
 
-		const meta = main.createDiv({ cls: "note-decay-row-meta" });
-		meta.createSpan({ cls: "note-decay-score", text: String(row.score) });
-		meta.createSpan({ cls: "note-decay-band", text: row.band });
+		const meta = main.createDiv({ cls: "patina-row-meta" });
+		meta.createSpan({ cls: "patina-score", text: String(row.score) });
+		meta.createSpan({ cls: "patina-band", text: row.band });
 		if (row.editMs > 0) {
-			meta.createSpan({ cls: "note-decay-effort", text: formatDuration(row.editMs) });
+			meta.createSpan({ cls: "patina-effort", text: formatDuration(row.editMs) });
 		}
 
 		if (row.reasons.length > 0) {
-			item.createDiv({ cls: "note-decay-reasons", text: row.reasons.join(" ") });
+			item.createDiv({ cls: "patina-reasons", text: row.reasons.join(" ") });
 		}
 
-		const actions = item.createDiv({ cls: "note-decay-row-actions" });
+		const actions = item.createDiv({ cls: "patina-row-actions" });
 		const snooze = actions.createEl("button", { text: "Snooze" });
 		this.registerDomEvent(snooze, "click", () => {
 			void this.plugin.snooze(row.path);

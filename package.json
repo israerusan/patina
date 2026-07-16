@@ -1,5 +1,5 @@
 {
-  "name": "note-decay",
+  "name": "patina",
   "version": "1.0.0",
   "description": "Score every note's staleness from edits, opens, and inbound links, then work through a decay-ranked review queue.",
   "main": "main.js",

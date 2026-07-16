@@ -1,4 +1,4 @@
-/* Note Decay
+/* Patina
  *
  * Every colour is derived from an Obsidian theme variable, never hard-coded, so the bands
  * stay legible in any theme — light, dark, or a high-contrast community one.
@@ -38,25 +38,25 @@
 
 /* --- status bar ----------------------------------------------------------- */
 
-.note-decay-status {
+.patina-status {
 	cursor: var(--cursor-link);
 }
 
-.note-decay-status[data-decay="stale"] {
+.patina-status[data-decay="stale"] {
 	color: var(--text-warning);
 }
 
-.note-decay-status[data-decay="decayed"] {
+.patina-status[data-decay="decayed"] {
 	color: var(--text-error);
 }
 
 /* --- review queue --------------------------------------------------------- */
 
-.note-decay-queue {
+.patina-queue {
 	padding: var(--size-4-2);
 }
 
-.note-decay-queue-header {
+.patina-queue-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -65,7 +65,7 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.note-decay-sort {
+.patina-sort {
 	display: flex;
 	align-items: center;
 	gap: var(--size-4-1);
@@ -73,51 +73,51 @@
 	color: var(--text-muted);
 }
 
-.note-decay-topic-btn {
+.patina-topic-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: var(--size-4-1);
 	font-size: var(--font-ui-smaller);
 }
 
-.note-decay-topic-btn.is-locked {
+.patina-topic-btn.is-locked {
 	color: var(--text-muted);
 }
 
-.note-decay-empty {
+.patina-empty {
 	padding: var(--size-4-4) var(--size-4-2);
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
-.note-decay-list {
+.patina-list {
 	display: flex;
 	flex-direction: column;
 }
 
-.note-decay-row {
+.patina-row {
 	padding: var(--size-4-2) 0;
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.note-decay-row-main {
+.patina-row-main {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
 	gap: var(--size-4-2);
 }
 
-.note-decay-row-title {
+.patina-row-title {
 	color: var(--text-normal);
 	text-decoration: none;
 	font-weight: var(--font-medium);
 }
 
-.note-decay-row-title:hover {
+.patina-row-title:hover {
 	color: var(--text-accent);
 }
 
-.note-decay-row-meta {
+.patina-row-meta {
 	display: flex;
 	align-items: center;
 	gap: var(--size-4-1);
@@ -126,48 +126,48 @@
 	white-space: nowrap;
 }
 
-.note-decay-score {
+.patina-score {
 	font-variant-numeric: tabular-nums;
 	font-weight: var(--font-bold);
 }
 
-.note-decay-row[data-decay="stale"] .note-decay-score {
+.patina-row[data-decay="stale"] .patina-score {
 	color: var(--text-warning);
 }
 
-.note-decay-row[data-decay="decayed"] .note-decay-score {
+.patina-row[data-decay="decayed"] .patina-score {
 	color: var(--text-error);
 }
 
-.note-decay-band,
-.note-decay-effort {
+.patina-band,
+.patina-effort {
 	color: var(--text-faint);
 }
 
-.note-decay-reasons {
+.patina-reasons {
 	padding-top: var(--size-4-1);
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
 
-.note-decay-row-actions {
+.patina-row-actions {
 	display: flex;
 	gap: var(--size-4-1);
 	padding-top: var(--size-4-1);
 }
 
-.note-decay-row-actions button {
+.patina-row-actions button {
 	font-size: var(--font-ui-smaller);
 	padding: var(--size-2-1) var(--size-4-1);
 }
 
 /* --- topic groups (Pro) --------------------------------------------------- */
 
-.note-decay-group {
+.patina-group {
 	padding-top: var(--size-4-3);
 }
 
-.note-decay-group-head {
+.patina-group-head {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
@@ -176,12 +176,12 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.note-decay-group-label {
+.patina-group-label {
 	font-weight: var(--font-bold);
 	color: var(--text-normal);
 }
 
-.note-decay-group-count {
+.patina-group-count {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-faint);
 	white-space: nowrap;
@@ -189,17 +189,17 @@
 
 /* --- superseded notes (Pro) ----------------------------------------------- */
 
-.note-decay-superseded-lead {
+.patina-superseded-lead {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
-.note-decay-superseded-row {
+.patina-superseded-row {
 	padding: var(--size-4-2) 0;
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.note-decay-superseded-by {
+.patina-superseded-by {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--size-4-2);
@@ -207,56 +207,56 @@
 	font-size: var(--font-ui-smaller);
 }
 
-.note-decay-superseded-link {
+.patina-superseded-link {
 	color: var(--text-accent);
 	text-decoration: none;
 }
 
-.note-decay-superseded-link:hover {
+.patina-superseded-link:hover {
 	text-decoration: underline;
 }
 
 /* --- "why this Pro feature could not run" --------------------------------- */
 
-.note-decay-block-copy {
+.patina-block-copy {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
 /* --- suggester ------------------------------------------------------------ */
 
-.note-decay-suggest-name {
+.patina-suggest-name {
 	font-weight: var(--font-medium);
 }
 
-.note-decay-suggest-desc {
+.patina-suggest-desc {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
 
 /* --- license and Pro ------------------------------------------------------ */
 
-.note-decay-license-input {
+.patina-license-input {
 	width: 100%;
 	font-family: var(--font-monospace);
 	resize: vertical;
 }
 
-.note-decay-license-status {
+.patina-license-status {
 	padding: var(--size-4-2) 0;
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
 }
 
-.note-decay-license-status.is-pro {
+.patina-license-status.is-pro {
 	color: var(--text-success);
 }
 
-.note-decay-license-error {
+.patina-license-error {
 	color: var(--text-error);
 }
 
-.note-decay-pro-pill {
+.patina-pro-pill {
 	margin-left: var(--size-4-1);
 	padding: 0 var(--size-4-1);
 	border-radius: var(--radius-s);
@@ -268,11 +268,11 @@
 	letter-spacing: 0.04em;
 }
 
-.note-decay-setting-locked {
+.patina-setting-locked {
 	opacity: 0.75;
 }
 
-.note-decay-pro-card {
+.patina-pro-card {
 	margin-top: var(--size-4-2);
 	padding: var(--size-4-3);
 	border: 1px solid var(--background-modifier-border);
@@ -280,32 +280,32 @@
 	background-color: var(--background-secondary);
 }
 
-.note-decay-pro-card-title {
+.patina-pro-card-title {
 	margin-bottom: var(--size-4-1);
 	font-size: var(--font-ui-medium);
 	font-weight: var(--font-bold);
 	color: var(--text-normal);
 }
 
-.note-decay-pro-card p {
+.patina-pro-card p {
 	margin: 0 0 var(--size-4-2) 0;
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
-.note-decay-pro-card ul {
+.patina-pro-card ul {
 	margin: 0 0 var(--size-4-3) 0;
 	padding-left: var(--size-4-4);
 	font-size: var(--font-ui-small);
 }
 
-.note-decay-pro-btn,
-.note-decay-upgrade-inline {
+.patina-pro-btn,
+.patina-upgrade-inline {
 	color: var(--text-accent);
 	font-weight: var(--font-medium);
 }
 
-.note-decay-pro-btn {
+.patina-pro-btn {
 	display: inline-block;
 	padding: var(--size-4-1) var(--size-4-3);
 	border-radius: var(--radius-s);
@@ -314,7 +314,7 @@
 	text-decoration: none;
 }
 
-.note-decay-pro-btn:hover {
+.patina-pro-btn:hover {
 	background-color: var(--interactive-accent-hover);
 	color: var(--text-on-accent);
 }
@@ -323,7 +323,7 @@
  * null). It is deliberately NOT styled as a button: nothing here is clickable, and a disabled
  * accent-coloured button would invite the click anyway. */
 
-.note-decay-pro-pending {
+.patina-pro-pending {
 	display: block;
 	padding: var(--size-4-2);
 	border: 1px dashed var(--background-modifier-border);
@@ -331,13 +331,13 @@
 	background-color: var(--background-primary);
 }
 
-.note-decay-pro-pending-label {
+.patina-pro-pending-label {
 	display: block;
 	font-weight: var(--font-bold);
 	color: var(--text-normal);
 }
 
-.note-decay-pro-pending-copy {
+.patina-pro-pending-copy {
 	display: block;
 	padding-top: var(--size-4-1);
 	color: var(--text-muted);
@@ -346,17 +346,17 @@
 
 /* --- upsell modal --------------------------------------------------------- */
 
-.note-decay-upsell-lead {
+.patina-upsell-lead {
 	padding-bottom: var(--size-4-2);
 }
 
-.note-decay-upsell-sub {
+.patina-upsell-sub {
 	padding-bottom: var(--size-4-3);
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
-.note-decay-upsell-actions {
+.patina-upsell-actions {
 	display: flex;
 	align-items: center;
 	gap: var(--size-4-2);
@@ -364,7 +364,7 @@
 
 /* --- semantic engine ------------------------------------------------------ */
 
-.note-decay-engine p {
+.patina-engine p {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
