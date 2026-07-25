@@ -53,7 +53,7 @@ Half-lives, weights, band thresholds, the frontmatter key, and the excluded fold
 
 ### Pro — $29 one-time, unlocks all five Second Read add-ons
 
-> **Pro is not on sale yet.** There is no checkout, and the add-on does not pretend there is: the Pro card in settings says "purchasing opens soon" instead of showing a buy button. The suite launches with all five add-ons and a checkout that emails your key automatically. If you already have a key, paste it into Settings → Patina → License.
+> **Second Read Pro — $29 one-time.** One key unlocks Pro in all five Second Read add-ons (Note Decay, Standing Questions, Effort Index, Prior Art, Unwritten). Buy here: https://buymeacoffee.com/vaultspotlight/e/560213 — the key is emailed to you; paste it into Settings → Patina → License. It is verified offline.
 
 Pro adds the two features that need to compare notes **by meaning** rather than by metadata:
 

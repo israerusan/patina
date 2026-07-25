@@ -1,6 +1,6 @@
 {
   "name": "patina",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Score every note's staleness from edits, opens, and inbound links, then work through a decay-ranked review queue.",
   "main": "main.js",
   "type": "module",

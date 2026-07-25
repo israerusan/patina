@@ -39,11 +39,11 @@ export const PRO_PRICE_LABEL = "$29 one-time";
  * the upsell modal, the inline upgrade links and `manifest.fundingUrl` all follow from it — and
  * `test/purchase.test.ts` asserts that they do, in both states.
  */
-export const PURCHASE_URL: string | null = null;
+export const PURCHASE_URL: string | null = "https://buymeacoffee.com/vaultspotlight/e/560213";
 
 /** True once a real checkout exists. The ONLY thing any CTA may branch on. */
 export const PURCHASE_AVAILABLE: boolean =
-	typeof PURCHASE_URL === "string" && (PURCHASE_URL as string).length > 0;
+	typeof PURCHASE_URL === "string" && PURCHASE_URL.length > 0;
 
 /** What a Pro card says instead of a buy button while the checkout is not open. */
 export const PURCHASE_PENDING_LABEL = "Purchasing opens soon";

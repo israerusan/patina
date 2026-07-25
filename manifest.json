@@ -1,10 +1,11 @@
 {
   "id": "patina",
   "name": "Patina",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.5.0",
   "description": "Score every note's staleness from edits, opens, and inbound links, then work through a decay-ranked review queue.",
   "author": "Israel Avila",
   "authorUrl": "https://github.com/israerusan",
+  "fundingUrl": "https://buymeacoffee.com/vaultspotlight/e/560213",
   "isDesktopOnly": false
 }
