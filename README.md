@@ -4,6 +4,11 @@ Find the notes that are quietly rotting.
 
 Every vault accumulates notes that were true when you wrote them and are not true now. Nothing tells you which ones. Patina scores every note's staleness from four signals, ranks them, and gives you a worklist.
 
+<!-- SCREENSHOT SLOT — drop a real Obsidian capture here to lift conversions.
+     ![Patina's review queue: notes ranked by decay score, with stale notes dimmed in the file explorer](docs/assets/hero.png)
+     Suggested shot: the review queue in the sidebar (notes ranked by score) alongside the dimmed stale notes in the file explorer. Save as docs/assets/hero.png -->
+
+
 > Patina never edits your notes. The only thing it ever writes is a `decay:` line in a note's frontmatter — and only when you explicitly run "Set decay profile for this note".
 
 ## How the score works
@@ -53,7 +58,7 @@ Half-lives, weights, band thresholds, the frontmatter key, and the excluded fold
 
 ### Pro — $29 one-time, unlocks all five Second Read add-ons
 
-> **Second Read Pro — $29 one-time.** One key unlocks Pro in all five Second Read add-ons (Note Decay, Standing Questions, Effort Index, Prior Art, Unwritten). Buy here: https://buymeacoffee.com/vaultspotlight/e/560213 — the key is emailed to you; paste it into Settings → Patina → License. It is verified offline.
+> **Second Read Pro — $29 one-time.** One key unlocks Pro in all five Second Read add-ons (Note Decay, Standing Questions, Effort Index, Prior Art, Unwritten). Buy here: https://buymeacoffee.com/vaultspotlight/e/560213 — the key is emailed to you **automatically, within seconds** (delivery is fully automated); paste it into Settings → Patina → License. It is verified offline.
 
 Pro adds the two features that need to compare notes **by meaning** rather than by metadata:
 
